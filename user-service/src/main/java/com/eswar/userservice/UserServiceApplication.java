@@ -1,5 +1,4 @@
 package com.eswar.userservice;
-
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
@@ -27,7 +26,10 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 )
 public class UserServiceApplication {
 
+
+
 	public static void main(String[] args) {
+
 		SpringApplication.run(UserServiceApplication.class, args);
 	}
 

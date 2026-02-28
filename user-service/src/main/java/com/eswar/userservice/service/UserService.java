@@ -1,5 +1,6 @@
 package com.eswar.userservice.service;
 
+import com.eswar.userservice.constants.ErrorMessages;
 import com.eswar.userservice.dto.UserRequest;
 import com.eswar.userservice.dto.UserResponse;
 import com.eswar.userservice.entity.UserEntity;
@@ -30,14 +31,14 @@ public class UserService {
     // Get user by ID
     public UserResponse getUserById(UUID id) {
         UserEntity entity = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
+                .orElseThrow(() -> new UserNotFoundException(id.toString() ));
         return userMapper.toResponse(entity);
     }
 
     // Get user by Email
     public UserResponse getUserByEmail(String email) {
         UserEntity entity = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + email));
+                .orElseThrow(() -> new UserNotFoundException(email));
         return userMapper.toResponse(entity);
     }
 
@@ -45,7 +46,7 @@ public class UserService {
     public List<UserResponse> getAllUsers() {
         return userRepository.findAll().stream()
                 .map(userMapper::toResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     // Update user
@@ -66,13 +67,13 @@ public class UserService {
                     UserEntity updated = userRepository.save(existing);
                     return userMapper.toResponse(updated);
                 })
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+                .orElseThrow(() -> new UserNotFoundException(id.toString()));
     }
 
     // Delete user
     public void deleteUser(UUID id) {
         if (!userRepository.existsById(id)) {
-            throw new UserNotFoundException("User not found with id: " + id);
+            throw new UserNotFoundException( id.toString() );
         }
         userRepository.deleteById(id);
     }

@@ -29,6 +29,9 @@
 	<properties>
 		<java.version>21</java.version>
 		<spring-cloud.version>2025.1.0</spring-cloud.version>
+		<sonar.projectKey>${env.PROJECT_KEY}</sonar.projectKey>
+		<sonar.host.url>${env.SONAR_URL}</sonar.host.url>
+		<sonar.token>${env.SONAR_TOKEN}</sonar.token>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -172,6 +175,11 @@
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.sonarsource.scanner.maven</groupId>
+				<artifactId>sonar-maven-plugin</artifactId>
+				<version>3.10.0.2594</version>
 			</plugin>
 		</plugins>
 	</build>

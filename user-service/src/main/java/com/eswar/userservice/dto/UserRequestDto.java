@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size;
 
 import java.util.Set;
 
-public record UserRequest(
+public record UserRequestDto(
 
         @NotBlank(message = "First name is required")
         @Size(max = 100, message = "First name must be at most 100 characters")

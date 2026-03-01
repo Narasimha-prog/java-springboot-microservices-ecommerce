@@ -6,7 +6,7 @@ import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
-public record UserResponse(
+public record UserResponseDto(
         UUID id,
          String firstName,
          String lastName,

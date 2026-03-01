@@ -1,6 +1,6 @@
-package com.eswar.userservice.advice;
+package com.eswar.authenticationservice.advice;
 
-import com.eswar.userservice.exception.UserNotFoundException;
+import com.eswar.authenticationservice.exception.UserNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
@@ -12,7 +12,7 @@ import java.time.Instant;
 
 @RestControllerAdvice
 @Log4j2
-public class UserRestControllerAdvice {
+public class AuthenticationRestControllerAdvice {
 
     // Handle UserNotFoundException
     @ExceptionHandler(UserNotFoundException.class)

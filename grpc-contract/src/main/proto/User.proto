@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package user;
+
+option java_package = "com.eswar.grpc.user";
+option java_multiple_files = true;
+
+service UserService {
+
+  rpc GetUserByUsername(UserRequest)
+      returns (UserResponse);
+
+}
+
+message UserRequest {
+
+  string username = 1;
+
+}
+
+message UserResponse {
+
+  string username = 1;
+  string email = 2;
+  string role = 3;
+
+}

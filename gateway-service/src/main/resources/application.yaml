@@ -1,3 +1,33 @@
 spring:
   application:
     name: gateway-service
+
+  devtools:
+    restart:
+      enabled: true
+    livereload:
+      enabled: true
+
+  profiles:
+     active: dev
+  config:
+    import: optional:configserver:http://localhost:8888
+
+logging:
+  level:
+    org.springframework.cloud.gateway: TRACE
+    org.springframework.cloud.gateway.route: DEBUG
+    org.springframework.cloud.netflix.eureka: DEBUG
+    org.springframework.cloud.client.discovery: DEBUG
+    org.springframework.cloud.loadbalancer: TRACE
+    org.springframework.cloud.gateway.handler.RoutePredicateHandlerMapping: TRACE
+    org.springframework.boot.context.properties: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, gateway
+  endpoint:
+    gateway:
+      enabled: true

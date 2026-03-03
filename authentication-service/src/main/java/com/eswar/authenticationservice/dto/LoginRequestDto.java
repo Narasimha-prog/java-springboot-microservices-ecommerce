@@ -1,12 +1,14 @@
 package com.eswar.authenticationservice.dto;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public record LoginRequestDto(
 
-        @NotBlank(message = "Username is required")
-        @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
+        @NotBlank(message = "email is required")
+        @Size(min = 3, max = 50, message = "email must be between 3 and 50 characters")
+        @Email(message = "email must be a valid format")
         String email,
 
         @NotBlank(message = "Password is required")

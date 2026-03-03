@@ -18,42 +18,41 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
-@SecurityRequirement(name = "JWT")
 @Tag(name = "Users", description = "API for managing users in the e-commerce platform")
 public class UserRestController {
 
     private final UserService userService;
+    private final PasswordEncoder passwordEncoder;
 
     @PostMapping
     @Operation(summary = "Create a new user", description = "Creates a new user with roles and returns the created user")
-    public ResponseEntity<UserResponseDto> createUser(@Valid @RequestBody UserRequestDto request,
-                                                      PasswordEncoder encoder) {
-        UserResponseDto response = userService.createUser(request,encoder);
+    public ResponseEntity<UserResponseDto> createUser(@Valid @RequestBody UserRequestDto request) {
+        UserResponseDto response = userService.createUser(request);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get a user by ID", description = "Fetches a single user by UUID")
+    @Operation(summary = "Get a user by ID", description = "Fetches a single user by UUID",security = @SecurityRequirement( name="JWT"))
     public ResponseEntity<UserResponseDto> getUserById(@PathVariable UUID id) {
         UserResponseDto response = userService.getUserById(id);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/by-email")
-    @Operation(summary = "Get user by email", description = "Fetch a user by their email address")
+    @Operation(summary = "Get user by email", description = "Fetch a user by their email address",security = @SecurityRequirement( name="JWT"))
     public ResponseEntity<UserResponseDto> getUserByEmail(@RequestParam String email) {
         return ResponseEntity.ok(userService.getUserByEmail(email));
     }
 
     @GetMapping()
-    @Operation(summary = "Get all users", description = "Fetches all users in the system")
+    @Operation(summary = "Get all users", description = "Fetches all users in the system",security = @SecurityRequirement( name="JWT"))
     public ResponseEntity<List<UserResponseDto>> getAllUsers() {
         List<UserResponseDto> users = userService.getAllUsers();
         return ResponseEntity.ok(users);
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update an existing user", description = "Updates a user by UUID and returns updated data")
+    @Operation(summary = "Update an existing user", description = "Updates a user by UUID and returns updated data",security = @SecurityRequirement( name="JWT"))
     public ResponseEntity<UserResponseDto> updateUser(
             @PathVariable UUID id,
             @Valid @RequestBody UserRequestDto request) {

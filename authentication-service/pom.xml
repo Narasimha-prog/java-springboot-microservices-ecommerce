@@ -129,32 +129,34 @@
 			<artifactId>mapstruct</artifactId>
 			<version>1.5.5.Final</version>
 		</dependency>
-<!--		&lt;!&ndash; gRPC Spring Boot starter (CLIENT) &ndash;&gt;-->
-<!--		<dependency>-->
-<!--			<groupId>net.devh</groupId>-->
-<!--			<artifactId>grpc-client-spring-boot-starter</artifactId>-->
-<!--			<version>3.0.0.RELEASE</version>-->
-<!--		</dependency>-->
-
-		<!-- protobuf -->
-<!--		<dependency>-->
-<!--			<groupId>com.google.protobuf</groupId>-->
-<!--			<artifactId>protobuf-java</artifactId>-->
-<!--			<version>3.25.3</version>-->
-<!--		</dependency>-->
-
-<!--		&lt;!&ndash; stub &ndash;&gt;-->
-<!--		<dependency>-->
-<!--			<groupId>io.grpc</groupId>-->
-<!--			<artifactId>grpc-stub</artifactId>-->
-<!--			<version>1.60.1</version>-->
-<!--		</dependency>-->
 		<dependency>
 			<groupId>com.eswar</groupId>
 			<artifactId>grpc-contract</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-api</artifactId>
+			<version>0.11.5</version>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-impl</artifactId>
+			<version>0.11.5</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-jackson</artifactId>
+			<version>0.11.5</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
 	</dependencies>
+
 	<dependencyManagement>
 		<dependencies>
 			<dependency>

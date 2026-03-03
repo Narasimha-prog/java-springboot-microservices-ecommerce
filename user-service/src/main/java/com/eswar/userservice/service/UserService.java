@@ -22,14 +22,14 @@ public class UserService {
 
     private final IUserRepository userRepository;
     private final IUserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
     // Create a new user
     @Transactional
-    public UserResponseDto createUser(UserRequestDto request,
-                                      PasswordEncoder encoder) {
+    public UserResponseDto createUser(UserRequestDto request) {
         UserEntity entity = userMapper.toEntity(request);
 
-        String encodedPassword = encoder.encode(entity.getPassword());
+        String encodedPassword = passwordEncoder.encode(entity.getPassword());
         entity.setPassword(encodedPassword);
 
         UserEntity saved = userRepository.save(entity);

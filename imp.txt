@@ -1,2 +1,20 @@
 sonar  user: admin
        password: 9908418196eswaR@
+
+
+
+       {
+         "firstName": "Daniel",
+         "lastName": "Martinez",
+         "email": "daniel.martinez@example.com",
+         "password": "Xy9$kL2!pQ7#rT5@zW8^mN3&bV6*",
+         "countryCode": "+1",
+         "phoneNumber": "4155557832",
+         "addressStreet": "742 Evergreen Terrace",
+         "addressCity": "Springfield",
+         "addressCountry": "USA",
+         "addressZipCode": "94107",
+         "roles": [
+           "CUSTOMER"
+         ]
+       }

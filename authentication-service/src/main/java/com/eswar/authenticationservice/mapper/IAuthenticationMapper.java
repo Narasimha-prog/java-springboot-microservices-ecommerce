@@ -1,9 +1,7 @@
 package com.eswar.authenticationservice.mapper;
 
 import com.eswar.authenticationservice.dto.AccessTokenResponseDto;
-import com.eswar.authenticationservice.dto.AuthenticationRequestDto;
 import com.eswar.authenticationservice.dto.AuthenticationResponseDto;
-import com.eswar.authenticationservice.dto.LoginRequestDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -13,7 +11,6 @@ import java.util.Set;
 @Mapper(componentModel = "spring")
 public interface IAuthenticationMapper {
 
-    AuthenticationRequestDto toAuthRequest(LoginRequestDto request);
 
     @Mapping(target = "tokenType", constant = "Bearer")
     AuthenticationResponseDto toAuthenticationResponse(
@@ -31,7 +28,7 @@ public interface IAuthenticationMapper {
             Long expiresIn,
             Instant issuedAt,
             String username,
-            String role
+            Set<String> roles
     );
 
 }

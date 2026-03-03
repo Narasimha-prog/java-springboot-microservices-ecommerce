@@ -1,6 +1,7 @@
 package com.eswar.authenticationservice.dto;
 
 import java.time.Instant;
+import java.util.Set;
 
 public record AccessTokenResponseDto(
         String accessToken,
@@ -8,6 +9,6 @@ public record AccessTokenResponseDto(
         Long expiresIn,
         Instant issuedAt,
         String username,
-        String role
+        Set<String> roles
 ) {
 }

@@ -2,6 +2,12 @@ spring:
   application:
     name: user-service
 
+  devtools:
+    restart:
+      enabled: true
+    livereload:
+      enabled: true
+
   profiles:
     active: dev
   config:

@@ -8,8 +8,6 @@ import com.eswar.productservice.mapper.IProductMapper;
 import com.eswar.productservice.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.common.errors.DuplicateResourceException;
-import org.apache.kafka.common.errors.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +34,7 @@ public class ProductServiceImpl implements IProductService {
         }
 
         CategoryEntity category = categoryRepository.findById(request.categoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+                .orElseThrow(() -> new CategoryNotFoundException("Category not found: "+request.categoryId()));
 
         ProductEntity product = mapper.toEntity(request);
 

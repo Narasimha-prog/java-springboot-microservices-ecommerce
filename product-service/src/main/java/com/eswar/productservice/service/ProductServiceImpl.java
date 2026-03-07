@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.errors.DuplicateResourceException;
 import org.apache.kafka.common.errors.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,6 +26,7 @@ public class ProductServiceImpl implements IProductService {
     private final IProductMapper mapper;
 
     @Override
+    @Transactional
     public ProductResponseDto create(CreateProductRequestDto request) {
 
         log.info("Creating product with SKU: {}", request.sku());
@@ -37,6 +39,7 @@ public class ProductServiceImpl implements IProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
         ProductEntity product = mapper.toEntity(request);
+
         product.setCategory(category);
         product.setStatus(ProductStatus.ACTIVE);
 
@@ -46,15 +49,17 @@ public class ProductServiceImpl implements IProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProductResponseDto getById(UUID id) {
 
         ProductEntity product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+                .orElseThrow(() -> new ProductNotFoundException("Product not found: "+id));
 
         return mapper.toResponse(product);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ProductResponseDto> getAll() {
 
         return productRepository.findAll()
@@ -64,10 +69,11 @@ public class ProductServiceImpl implements IProductService {
     }
 
     @Override
+    @Transactional
     public ProductResponseDto update(UUID id, UpdateProductRequestDto request) {
 
         ProductEntity product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+                .orElseThrow(() -> new ProductNotFoundException("Product not found: "+id));
 
         product.setName(request.name());
         product.setDescription(request.description());
@@ -77,10 +83,11 @@ public class ProductServiceImpl implements IProductService {
     }
 
     @Override
+    @Transactional
     public void delete(UUID id) {
 
         if (!productRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Product not found");
+            throw new ProductNotFoundException("Product not found: "+id);
         }
 
         productRepository.deleteById(id);

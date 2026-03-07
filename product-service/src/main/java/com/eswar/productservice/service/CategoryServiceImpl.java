@@ -8,9 +8,8 @@ import com.eswar.productservice.repository.ICategoryRepository;
 import com.eswar.productservice.service.ICategoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.common.errors.DuplicateResourceException;
-import org.apache.kafka.common.errors.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,6 +23,7 @@ public class CategoryServiceImpl implements ICategoryService {
     private final ICategoryMapper mapper;
 
     @Override
+    @Transactional
     public CategoryResponseDto create(CategoryRequestDto request) {
 
         log.info("Creating category: {}", request.name());
@@ -39,10 +39,11 @@ public class CategoryServiceImpl implements ICategoryService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public CategoryResponseDto getById(UUID id) {
 
         CategoryEntity category = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+                .orElseThrow(() -> new CategoryNotFoundException("Category not found"));
 
         return mapper.toResponse(category);
     }
@@ -57,10 +58,11 @@ public class CategoryServiceImpl implements ICategoryService {
     }
 
     @Override
+    @Transactional
     public CategoryResponseDto update(UUID id, CategoryRequestDto request) {
 
         CategoryEntity category = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+                .orElseThrow(() -> new CategoryNotFoundException("Category not found"));
 
         category.setName(request.name());
         category.setDescription(request.description());
@@ -69,10 +71,11 @@ public class CategoryServiceImpl implements ICategoryService {
     }
 
     @Override
+    @Transactional
     public void delete(UUID id) {
 
         if (!repository.existsById(id)) {
-            throw new ResourceNotFoundException("Category not found");
+            throw new CategoryNotFoundException("Category not found");
         }
 
         repository.deleteById(id);

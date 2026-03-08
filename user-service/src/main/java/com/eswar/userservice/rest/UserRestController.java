@@ -2,7 +2,7 @@ package com.eswar.userservice.rest;
 
 import com.eswar.userservice.dto.UserRequestDto;
 import com.eswar.userservice.dto.UserResponseDto;
-import com.eswar.userservice.service.UserService;
+import com.eswar.userservice.service.IUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,7 +21,7 @@ import java.util.UUID;
 @Tag(name = "Users", description = "API for managing users in the e-commerce platform")
 public class UserRestController {
 
-    private final UserService userService;
+    private final IUserService userService;
     private final PasswordEncoder passwordEncoder;
 
     @PostMapping

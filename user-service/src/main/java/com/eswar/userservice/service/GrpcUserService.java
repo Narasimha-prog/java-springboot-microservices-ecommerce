@@ -20,7 +20,7 @@ import java.util.UUID;
 @Slf4j
 public class GrpcUserService extends UserServiceGrpc.UserServiceImplBase {
 
-   private final UserService userService;
+   private final IUserService userService;
 
     @Override
     public void getUserById(UserIdRequest request, StreamObserver<UserResponse> responseObserver) {

@@ -18,7 +18,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class UserServiceImp implements IUserService {
 
     private final IUserRepository userRepository;
     private final IUserMapper userMapper;
@@ -26,6 +26,7 @@ public class UserService {
 
     // Create a new user
     @Transactional
+    @Override
     public UserResponseDto createUser(UserRequestDto request) {
         UserEntity entity = userMapper.toEntity(request);
 
@@ -38,6 +39,7 @@ public class UserService {
 
     // Get user by ID
     @Transactional(readOnly = true)
+    @Override
     public UserResponseDto getUserById(UUID id) {
         UserEntity entity = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id.toString() ));
@@ -46,6 +48,7 @@ public class UserService {
 
     // Get user by ID
     @Transactional(readOnly = true)
+    @Override
     public UserGrpcResponse getUserByGrpcUserId(UUID id) {
         UserEntity entity = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id.toString() ));
@@ -54,6 +57,7 @@ public class UserService {
 
     // Get user by Email
     @Transactional(readOnly = true)
+    @Override
     public UserResponseDto getUserByEmail(String email) {
         UserEntity entity = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException(email));
@@ -61,6 +65,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
+    @Override
     public UserGrpcResponse getUserByGrpcUserEmail(String email) {
         UserEntity entity = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException(email));
@@ -69,6 +74,7 @@ public class UserService {
 
     // Get all users
     @Transactional(readOnly = true)
+    @Override
     public List<UserResponseDto> getAllUsers() {
         return userRepository.findAll().stream()
                 .map(userMapper::toResponse)
@@ -76,6 +82,8 @@ public class UserService {
     }
 
     // Update user
+    @Transactional
+    @Override
     public UserResponseDto updateUser(UUID id, UserRequestDto request) {
         return userRepository.findById(id)
                 .map(existing -> {
@@ -98,6 +106,7 @@ public class UserService {
 
     // Delete user
     @Transactional
+    @Override
     public void deleteUser(UUID id) {
         if (!userRepository.existsById(id)) {
             throw new UserNotFoundException( id.toString() );

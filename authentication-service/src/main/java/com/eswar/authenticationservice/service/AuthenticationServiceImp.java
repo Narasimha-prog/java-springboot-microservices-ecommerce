@@ -6,12 +6,12 @@ import com.eswar.authenticationservice.dto.LoginRequestDto;
 import com.eswar.authenticationservice.dto.RefreshTokenRequestDto;
 import com.eswar.authenticationservice.exception.UserNotFoundException;
 import com.eswar.authenticationservice.exception.UserServiceUnavailableException;
+import com.eswar.authenticationservice.grpc.client.GrpcUserServiceClient;
 import com.eswar.grpc.user.UserResponse;
 import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.lang.NonNull;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 

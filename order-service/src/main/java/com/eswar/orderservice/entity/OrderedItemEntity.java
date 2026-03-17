@@ -8,7 +8,8 @@ import java.math.BigDecimal;
 
 @Entity
 @Table(name = "ordered_items")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

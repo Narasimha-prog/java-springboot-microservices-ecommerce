@@ -1,6 +1,6 @@
 package com.eswar.authenticationservice.security;
 
-import com.eswar.authenticationservice.service.GrpcUserServiceClient;
+import com.eswar.authenticationservice.grpc.client.GrpcUserServiceClient;
 import com.eswar.grpc.user.UserResponse;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

@@ -8,14 +8,12 @@ import com.eswar.orderservice.constants.OrderStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
-@EqualsAndHashCode(callSuper = false)
+@Getter
+@Setter
 @Entity
 @Table(name = "orders")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -38,7 +36,7 @@ public class OrderEntity extends AbstractAuditingEntity {
     private String paymentReference;
 
     @OneToMany(mappedBy = "id.order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<OrderedItemEntity> items = new HashSet<>();
+    private List<OrderedItemEntity> items = new ArrayList<>();
 
 
 }

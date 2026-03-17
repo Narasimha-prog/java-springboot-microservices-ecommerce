@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -28,13 +29,14 @@ public class OrderServiceImp implements IOrderService{
     private final IOrderMapper mapper;
     private final OrderEventProducer orderEventProducer;
 
+    @Override
     public OrderResponseDto createOrder(OrderDto dto) {
 
         OrderEntity order = mapper.toEntity(dto);
 
         order.setStatus(OrderStatus.CREATED);
 
-        Set<OrderedItemEntity> items = new HashSet<>();
+        List<OrderedItemEntity> items = new ArrayList<>();
 
         for (OrderItemDto itemDto : dto.items()) {
 

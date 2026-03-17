@@ -1,6 +1,6 @@
 package com.eswar.userservice.runner;
 
-import com.eswar.userservice.service.GrpcUserService;
+import com.eswar.userservice.grpc.provider.GrpcUserService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import jakarta.annotation.PreDestroy;

@@ -1,6 +1,7 @@
 package com.eswar.userservice.service;
 
 import com.eswar.userservice.constants.ErrorMessages;
+import com.eswar.userservice.dto.PageResponse;
 import com.eswar.userservice.dto.UserGrpcResponse;
 import com.eswar.userservice.dto.UserRequestDto;
 import com.eswar.userservice.dto.UserResponseDto;
@@ -9,6 +10,8 @@ import com.eswar.userservice.exception.UserNotFoundException;
 import com.eswar.userservice.mapper.IUserMapper;
 import com.eswar.userservice.repository.IUserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -75,10 +78,23 @@ public class UserServiceImp implements IUserService {
     // Get all users
     @Transactional(readOnly = true)
     @Override
-    public List<UserResponseDto> getAllUsers() {
-        return userRepository.findAll().stream()
+    public PageResponse<UserResponseDto> getAllUsers(Pageable pageable) {
+
+        Page<UserEntity> page = userRepository.findAll(pageable);
+
+        List<UserResponseDto> content = page.getContent()
+                .stream()
                 .map(userMapper::toResponse)
                 .toList();
+
+        return new PageResponse<>(
+                content,
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages(),
+                page.isLast()
+        );
     }
 
     // Update user

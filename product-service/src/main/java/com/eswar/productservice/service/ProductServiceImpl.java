@@ -8,6 +8,8 @@ import com.eswar.productservice.mapper.IProductMapper;
 import com.eswar.productservice.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,12 +60,25 @@ public class ProductServiceImpl implements IProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ProductResponseDto> getAll() {
+    public PageResponse<ProductResponseDto> getAll(Pageable pageable) {
 
-        return productRepository.findAll()
-                .stream()
-                .map(mapper::toResponse)
-                .toList();
+
+        Page<ProductEntity> page=productRepository.findAll(pageable);
+
+        List<ProductResponseDto> content=page.getContent().stream().map(
+                mapper::toResponse
+        ).toList();
+
+
+
+        return new PageResponse<>(
+                content,
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages(),
+                page.isLast()
+        );
     }
 
     @Override

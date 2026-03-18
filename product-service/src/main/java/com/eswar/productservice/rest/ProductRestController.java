@@ -5,6 +5,7 @@ import com.eswar.productservice.service.IProductService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,8 +35,8 @@ public class ProductRestController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ProductResponseDto>> getAll() {
-        return  ResponseEntity.ok( service.getAll());
+    public ResponseEntity<PageResponse<ProductResponseDto>> getAllProducts(Pageable pageable) {
+        return  ResponseEntity.ok( service.getAll(pageable));
     }
 
     @PutMapping("/{id}")

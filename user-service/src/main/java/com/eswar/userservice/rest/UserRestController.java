@@ -1,5 +1,6 @@
 package com.eswar.userservice.rest;
 
+import com.eswar.userservice.dto.PageResponse;
 import com.eswar.userservice.dto.UserRequestDto;
 import com.eswar.userservice.dto.UserResponseDto;
 import com.eswar.userservice.service.IUserService;
@@ -8,6 +9,8 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -46,8 +49,9 @@ public class UserRestController {
 
     @GetMapping()
     @Operation(summary = "Get all users", description = "Fetches all users in the system",security = @SecurityRequirement( name="JWT"))
-    public ResponseEntity<List<UserResponseDto>> getAllUsers() {
-        List<UserResponseDto> users = userService.getAllUsers();
+    public ResponseEntity<PageResponse<UserResponseDto>> getAllUsers(Pageable pageable) {
+
+        PageResponse<UserResponseDto> users = userService.getAllUsers(pageable);
         return ResponseEntity.ok(users);
     }
 

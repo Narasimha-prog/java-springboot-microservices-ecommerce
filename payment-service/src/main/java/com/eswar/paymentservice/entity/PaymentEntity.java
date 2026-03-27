@@ -24,6 +24,7 @@ public class PaymentEntity {
     private UUID id;
 
     private UUID orderId;
+
     private UUID userId;
 
     private BigDecimal amount;

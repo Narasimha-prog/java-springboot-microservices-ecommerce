@@ -6,6 +6,7 @@ import com.eswar.paymentservice.dto.PaymentCreateResponse;
 import com.eswar.paymentservice.dto.PaymentResponse;
 import com.eswar.paymentservice.dto.PaymentVerifyRequest;
 import com.eswar.paymentservice.kafka.events.OrderCreatedEvent;
+import com.razorpay.RazorpayException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,7 +16,7 @@ import java.util.UUID;
 public interface IPaymentService {
     void processPayment(OrderCreatedEvent event);
 
-    PaymentCreateResponse createPayment(UUID orderId, Principal principal);
+    PaymentCreateResponse createPayment(UUID orderId, Principal principal) throws RazorpayException;
 
     PaymentResponse verifyPayment(PaymentVerifyRequest request, Principal principal);
 
@@ -27,9 +28,4 @@ public interface IPaymentService {
 
     PaymentResponse updatePaymentStatus(UUID paymentId, PaymentStatus status);
 
-    @Transactional
-    PaymentResponse createPayment(UUID orderId);
-
-    @Transactional
-    void verifyPayment(String orderId, String paymentId, String signature);
 }

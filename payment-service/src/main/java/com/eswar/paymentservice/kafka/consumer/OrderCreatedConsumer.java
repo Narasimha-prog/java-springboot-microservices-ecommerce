@@ -14,7 +14,7 @@ public class OrderCreatedConsumer {
 
     private final IPaymentService paymentService;
 
-    @KafkaListener(topics = "order-created", groupId = "payment-group")
+    @KafkaListener(topics = "order-created", groupId = "payment-group-v1")
     public void consume(OrderCreatedEvent event) {
         log.info("Received order event: {}", event);
 

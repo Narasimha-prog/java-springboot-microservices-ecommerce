@@ -47,7 +47,7 @@ public class SecurityConfig {
                                 ).permitAll()
                                 .requestMatchers("/docs/**", "/css/**", "/js/**").permitAll()
                                 // Public product view
-                                .requestMatchers(HttpMethod.POST, "/api/v1/orders").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/v1/payments").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                 // Admin only
 

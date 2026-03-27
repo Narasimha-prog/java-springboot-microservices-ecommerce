@@ -6,7 +6,9 @@ import com.eswar.paymentservice.dto.PaymentCreateResponse;
 import com.eswar.paymentservice.dto.PaymentResponse;
 import com.eswar.paymentservice.dto.PaymentVerifyRequest;
 import com.eswar.paymentservice.service.IPaymentService;
+import com.razorpay.RazorpayException;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +30,7 @@ public class PaymentRestController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<PaymentCreateResponse> createPayment(
             @PathVariable UUID orderId,
-            Principal principal) {
+            Principal principal) throws RazorpayException {
 
         return ResponseEntity.ok(paymentService.createPayment(orderId, principal));
     }
@@ -47,7 +49,7 @@ public class PaymentRestController {
     @GetMapping("/my")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<PageResponse<PaymentResponse>> getMyPayments(
-            Pageable pageable,
+            @ParameterObject Pageable pageable,
             Principal principal) {
 
         return ResponseEntity.ok(paymentService.getMyPayments(principal, pageable));
@@ -58,7 +60,7 @@ public class PaymentRestController {
     // ✅ ADMIN → Get all payments
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<PageResponse<PaymentResponse>> getAllPayments(Pageable pageable) {
+    public ResponseEntity<PageResponse<PaymentResponse>> getAllPayments(@ParameterObject Pageable pageable) {
         return ResponseEntity.ok(paymentService.getAllPayments(pageable));
     }
 

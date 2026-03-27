@@ -1,7 +1,7 @@
 package com.eswar.userservice.constants;
 
 public enum UserRole {
-    CUSTOMER,
+    USER,
     ADMIN,
     SELLER,
     SUPPORT

@@ -10,6 +10,8 @@ import org.mapstruct.Mapping;
 public interface IPaymentMapper {
 
     // Entity → Response
+    @Mapping(target = "message", constant = "Payment fetched")
+    @Mapping(target = "status", expression = "java(entity.getStatus().name())")
     PaymentResponse toResponse(PaymentEntity entity);
 
     // Optional: Create response for frontend

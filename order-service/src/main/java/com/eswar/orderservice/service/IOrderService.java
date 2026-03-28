@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 
 
 public interface IOrderService {
@@ -18,5 +19,6 @@ public interface IOrderService {
     void cancelOrder(String orderId);
     boolean isOrderOwnedByUser(String orderId, String userId);
     PageResponse<OrderResponseDto> getOrdersByCustomerId(String customerId,Pageable pageable);
+    void updateOrderStatus(UUID orderId, UUID eventId,String eventType, String status, String paymentReference);
 
 }

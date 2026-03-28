@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.UUID;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record OrderCreatedEvent(
-
         UUID orderId,
         List<OrderItem> items
 ) {}

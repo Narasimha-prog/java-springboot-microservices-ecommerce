@@ -40,5 +40,10 @@ public class OrderEntity extends AbstractAuditingEntity {
     @OneToMany(mappedBy = "id.order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderedItemEntity> items = new ArrayList<>();
 
+    @ElementCollection
+    @CollectionTable(name = "order_processed_events", joinColumns = @JoinColumn(name = "order_id"))
+    @Column(name = "event_id")
+    private List<UUID> processedEventIds = new ArrayList<>();
+
 
 }

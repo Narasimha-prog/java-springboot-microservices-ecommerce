@@ -3,6 +3,7 @@ package com.eswar.paymentservice.service;
 import com.eswar.paymentservice.constatns.PaymentStatus;
 import com.eswar.paymentservice.dto.*;
 import com.eswar.paymentservice.entity.PaymentEntity;
+import com.eswar.paymentservice.kafka.constants.EventStatus;
 import com.eswar.paymentservice.kafka.events.OrderCreatedEvent;
 import com.eswar.paymentservice.kafka.producer.PaymentEventProducer;
 import com.eswar.paymentservice.mapper.IPaymentMapper;
@@ -114,13 +115,13 @@ public class PaymentServiceImp implements IPaymentService {
             payment.setStatus(PaymentStatus.SUCCESS);
             payment.setPaymentId(request.razorpayPaymentId());
 
-            producer.sendPaymentSuccess(payment.getOrderId());
+            producer.sendPaymentStatus(payment.getOrderId(), EventStatus.SUCCESS,"Payment Successful",request.razorpayPaymentId());
 
             return new PaymentResponse("SUCCESS", "Payment verified successfully");
         } else {
             payment.setStatus(PaymentStatus.FAILED);
 
-            producer.sendPaymentFailed(payment.getOrderId());
+            producer.sendPaymentStatus(payment.getOrderId(),EventStatus.FAILED,"Payment Failed or Declined ",null);
 
             return new PaymentResponse("FAILED", "Invalid payment signature");
         }

@@ -13,3 +13,13 @@ eureka:
 # server port
 server:
   port: 8761
+
+#actuators
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always

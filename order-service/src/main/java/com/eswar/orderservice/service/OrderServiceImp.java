@@ -238,6 +238,38 @@ public class OrderServiceImp implements IOrderService{
         );
     }
 
+
+    @Transactional
+    public void updateOrderStatus(UUID orderId,UUID eventId, String eventType, String status, String paymentReference) {
+
+        OrderEntity order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException("Order not found"));
+
+        if (order.getProcessedEventIds().contains(eventId)) {
+            return; // Already processed
+        }
+        switch (eventType) {
+
+            case "INVENTORY":
+                if (status.equals("SUCCESS")) {
+                    order.setStatus(OrderStatus.STOCK_RESERVED);
+                } else {
+                    order.setStatus(OrderStatus.FAILED);
+                }
+                break;
+
+            case "PAYMENT":
+                if (status.equals("SUCCESS")) {
+                    order.setStatus(OrderStatus.CONFIRMED);
+                    order.setPaymentReference(paymentReference); // ✅ important
+                } else {
+                    order.setStatus(OrderStatus.CANCELLED);
+                }
+                break;
+        }
+
+        orderRepository.save(order);
+    }
     private void publishOrderCreatedEvent(@NonNull OrderEntity order, BigDecimal totalAmount) {
 
         List<OrderItemEvent> items = order.getItems().stream()
@@ -257,4 +289,6 @@ public class OrderServiceImp implements IOrderService{
 
         orderEventProducer.sendOrderCreatedEvent(event);
     }
+
+
 }

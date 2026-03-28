@@ -45,7 +45,7 @@ public class UserServiceImp implements IUserService {
     @Override
     public UserResponseDto getUserById(UUID id) {
         UserEntity entity = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(id.toString() ));
+                .orElseThrow(() -> new UserNotFoundException("User not found with: "+id.toString() ));
         return userMapper.toResponse(entity);
     }
 

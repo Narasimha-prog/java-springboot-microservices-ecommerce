@@ -29,7 +29,7 @@ public class CategoryServiceImpl implements ICategoryService {
         log.info("Creating category: {}", request.name());
 
         if (repository.existsByName(request.name())) {
-            throw new DuplicateResourceException("Category already exists");
+            throw new BusinessException(ErrorCode.CATEGORY_ALREADY_EXISTS, request.name());
         }
 
         CategoryEntity category = mapper.toEntity(request);
@@ -43,7 +43,7 @@ public class CategoryServiceImpl implements ICategoryService {
     public CategoryResponseDto getById(UUID id) {
 
         CategoryEntity category = repository.findById(id)
-                .orElseThrow(() -> new CategoryNotFoundException("Category not found"));
+                .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND,id));
 
         return mapper.toResponse(category);
     }
@@ -61,8 +61,10 @@ public class CategoryServiceImpl implements ICategoryService {
     @Transactional
     public CategoryResponseDto update(UUID id, CategoryRequestDto request) {
 
+
         CategoryEntity category = repository.findById(id)
-                .orElseThrow(() -> new CategoryNotFoundException("Category not found"));
+                .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND,id));
+
 
         category.setName(request.name());
         category.setDescription(request.description());
@@ -74,9 +76,9 @@ public class CategoryServiceImpl implements ICategoryService {
     @Transactional
     public void delete(UUID id) {
 
-        if (!repository.existsById(id)) {
-            throw new CategoryNotFoundException("Category not found");
-        }
+        repository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND,id));
+
 
         repository.deleteById(id);
     }

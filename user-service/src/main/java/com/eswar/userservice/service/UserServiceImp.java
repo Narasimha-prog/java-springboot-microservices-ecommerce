@@ -61,7 +61,7 @@ public class UserServiceImp implements IUserService {
     @Override
     public UserResponseDto getUserById(UUID id) {
         UserEntity entity = userRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(USER_NOT_FOUND, "User not found with: " + id));
+                .orElseThrow(() -> new BusinessException(USER_NOT_FOUND, id));
         return userMapper.toResponse(entity);
     }
 
@@ -70,7 +70,7 @@ public class UserServiceImp implements IUserService {
     @Override
     public UserGrpcResponse getUserByGrpcUserId(UUID id) {
         UserEntity entity = userRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(USER_NOT_FOUND, "User not found with: " + id));
+                .orElseThrow(() -> new BusinessException(USER_NOT_FOUND, id));
         return userMapper.toGrpcResponse(entity);
     }
 
@@ -79,7 +79,7 @@ public class UserServiceImp implements IUserService {
     @Override
     public UserResponseDto getUserByEmail(String email) {
         UserEntity entity = userRepository.findByEmail(email)
-                .orElseThrow(() -> new BusinessException(USER_NOT_FOUND, "User not found with: " + email));
+                .orElseThrow(() -> new BusinessException(USER_NOT_FOUND, email));
         return userMapper.toResponse(entity);
     }
 
@@ -87,7 +87,7 @@ public class UserServiceImp implements IUserService {
     @Override
     public UserGrpcResponse getUserByGrpcUserEmail(String email) {
         UserEntity entity = userRepository.findByEmail(email)
-                .orElseThrow(() -> new BusinessException(USER_NOT_FOUND, "User not found with: " + email));
+                .orElseThrow(() -> new BusinessException(USER_NOT_FOUND,email));
         return userMapper.toGrpcResponse(entity);
     }
 
@@ -133,7 +133,7 @@ public class UserServiceImp implements IUserService {
                     UserEntity updated = userRepository.save(existing);
                     return userMapper.toResponse(updated);
                 })
-                .orElseThrow(() -> new BusinessException(USER_NOT_FOUND, "User not found with: " + id));
+                .orElseThrow(() -> new BusinessException(USER_NOT_FOUND,id));
     }
 
     // Delete user
@@ -141,7 +141,7 @@ public class UserServiceImp implements IUserService {
     @Override
     public void deleteUser(UUID id) {
         if (!userRepository.existsById(id)) {
-            throw new BusinessException(USER_NOT_FOUND, "User not found with: " + id);
+            throw new BusinessException(USER_NOT_FOUND,id);
         }
         userRepository.deleteById(id);
     }
@@ -150,7 +150,7 @@ public class UserServiceImp implements IUserService {
     @Transactional
     public UserResponseDto removeRoleFromUser(UUID id, UserRole role) {
         UserEntity user = userRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(USER_NOT_FOUND, "user is not found with id: " + id));
+                .orElseThrow(() -> new BusinessException(USER_NOT_FOUND,id));
 
         // Because it's a Set, this is O(1) in Java
         user.getRoles().remove(role);
@@ -164,7 +164,7 @@ public class UserServiceImp implements IUserService {
     @Override
     public UserResponseDto addRoleToUser(UUID id, UserRole role) {
         UserEntity user = userRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(USER_NOT_FOUND, "user is not found with id: " + id));
+                .orElseThrow(() -> new BusinessException(USER_NOT_FOUND,id));
 
         user.getRoles().add(role);
         UserEntity savedUser = userRepository.save(user);

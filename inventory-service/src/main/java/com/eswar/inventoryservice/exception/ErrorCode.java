@@ -18,6 +18,14 @@ public enum ErrorCode {
     // validation
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "Invalid request"),
     VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "Validation failed"),
+    MALFORMED_REQUEST(HttpStatus.BAD_REQUEST, "Request body is malformed"),
+    MISSING_PARAMETER(HttpStatus.BAD_REQUEST, "Required parameter is missing"),
+    TYPE_MISMATCH(HttpStatus.BAD_REQUEST, "Parameter type mismatch"),
+
+    // HTTP method/content errors
+    METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "HTTP method not allowed"),
+    UNSUPPORTED_MEDIA_TYPE(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "Unsupported media type"),
+    NOT_ACCEPTABLE(HttpStatus.NOT_ACCEPTABLE, "Not acceptable media type"),
 
     //genric
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Something went wrong");

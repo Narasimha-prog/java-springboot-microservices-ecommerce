@@ -32,11 +32,11 @@ public class ProductServiceImpl implements IProductService {
         log.info("Creating product with SKU: {}", request.sku());
 
         if (productRepository.existsBySku(request.sku())) {
-            throw new DuplicateResourceException("Product with SKU already exists");
+            throw new BusinessException(ErrorCode.PRODUCT_ALREADY_EXISTS);
         }
 
         CategoryEntity category = categoryRepository.findById(request.categoryId())
-                .orElseThrow(() -> new CategoryNotFoundException("Category not found: "+request.categoryId()));
+                .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND,request.categoryId()));
 
         ProductEntity product = mapper.toEntity(request);
 
@@ -51,9 +51,9 @@ public class ProductServiceImpl implements IProductService {
     @Override
     @Transactional(readOnly = true)
     public ProductResponseDto getById(UUID id) {
-
+//fetch all
         ProductEntity product = productRepository.findById(id)
-                .orElseThrow(() -> new ProductNotFoundException("Product not found: "+id));
+                .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND,id));
 
         return mapper.toResponse(product);
     }
@@ -84,9 +84,9 @@ public class ProductServiceImpl implements IProductService {
     @Override
     @Transactional
     public ProductResponseDto update(UUID id, UpdateProductRequestDto request) {
-
+        //fetch
         ProductEntity product = productRepository.findById(id)
-                .orElseThrow(() -> new ProductNotFoundException("Product not found: "+id));
+                .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND,id));
 
         product.setName(request.name());
         product.setDescription(request.description());
@@ -99,9 +99,10 @@ public class ProductServiceImpl implements IProductService {
     @Transactional
     public void delete(UUID id) {
 
-        if (!productRepository.existsById(id)) {
-            throw new ProductNotFoundException("Product not found: "+id);
-        }
+        //fetch
+      productRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND,id));
+
 
         productRepository.deleteById(id);
     }

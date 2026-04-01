@@ -10,5 +10,4 @@ public interface ICategoryRepository extends JpaRepository<CategoryEntity, UUID>
 
     boolean existsByName(String name);
 
-    Optional<CategoryEntity> findByName(String name);
 }

@@ -69,10 +69,10 @@ git clone <repo-url>
 cd ecommerce-application
 
 Run services individually:
-./mvnw spring-boot:run -pl product-service
-./mvnw spring-boot:run -pl user-service
-./mvnw spring-boot:run -pl order-service
-./mvnw spring-boot:run -pl auth-service
+cd authentication-service
+
+./mvnw spring-boot:run 
+
 Access APIs (Swagger/OpenAPI):
 http://localhost:<service-port>/swagger-ui.html
 ```

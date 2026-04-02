@@ -2,7 +2,6 @@ package com.eswar.paymentservice.handler;
 
 
 import com.eswar.paymentservice.exception.ErrorCode;
-import com.eswar.userservice.exception.ErrorCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

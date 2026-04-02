@@ -59,9 +59,9 @@ public class PaymentRestControllerAdvice {
     }
     private String mapFieldToErrorCode(String field) {
         return switch (field) {
-            case "email" -> ErrorCode.INVALID_REQUEST.name();
-            case "password" -> ErrorCode.INVALID_REQUEST.name();
-            case "firstName", "lastName" -> ErrorCode.INVALID_REQUEST.name();
+            case "razorpayOrderId" -> ErrorCode.INVALID_REQUEST.name();
+            case "razorpayPaymentId" -> ErrorCode.INVALID_REQUEST.name();
+            case "razorpaySignature"-> ErrorCode.INVALID_REQUEST.name();
             default -> ErrorCode.VALIDATION_FAILED.name();
         };
     }

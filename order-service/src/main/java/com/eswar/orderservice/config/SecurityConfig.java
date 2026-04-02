@@ -1,6 +1,8 @@
 package com.eswar.orderservice.config;
 
 import com.eswar.orderservice.filter.HeaderAuthenticationFilter;
+import com.eswar.orderservice.handler.SecurityExceptionHandler;
+import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,8 +18,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final SecurityExceptionHandler securityExceptionHandler;
     private static final String[] SWAGGER_WHITELIST = {
             "/swagger-ui.html",
             "/swagger-ui/**",
@@ -59,6 +63,10 @@ public class SecurityConfig {
                 ).formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .addFilterBefore(new HeaderAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(
+                        e->e.accessDeniedHandler(securityExceptionHandler)
+                                .authenticationEntryPoint(securityExceptionHandler)
+                )
                 .build();
 
 

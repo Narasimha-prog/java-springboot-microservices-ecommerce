@@ -1,2 +1,18 @@
-data
+# Environment
+.env
+
+# Local data
+data/
+
+# Temp files
 imp.txt
+
+# Logs
+*.log
+
+# Build
+target/
+
+# IDE
+.idea/
+.vscode/

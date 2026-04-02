@@ -1,15 +1,10 @@
 package com.eswar.inventoryservice.entity;
 
-import com.eswar.inventoryservice.audit.AbstractAuditingEntity;
+
+import com.eswar.inventoryservice.audit.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.time.Instant;
 import java.util.UUID;
-
 @Entity
 @Table(name = "inventory")
 @Getter
@@ -17,7 +12,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class InventoryEntity extends AbstractAuditingEntity {
+public class EventEntity extends BaseEntity {
 
     @Id
     private UUID productId;

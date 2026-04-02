@@ -1,6 +1,7 @@
 package com.eswar.inventoryservice.entity;
 
 import com.eswar.inventoryservice.kafka.constants.EventStatus;
+import com.eswar.inventoryservice.kafka.constants.EventType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,6 +16,7 @@ import java.util.UUID;
         })
 @Getter
 @Setter
+@EntityListeners(Abstr)
 public class InventoryEventEntity {
 
     @Id
@@ -24,7 +26,8 @@ public class InventoryEventEntity {
     private UUID orderId;
 
     @Column(nullable = false)
-    private String eventType; // INVENTORY
+    @Enumerated(EnumType.STRING)
+    private EventType eventType=EventType.INVENTORY; // INVENTORY
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

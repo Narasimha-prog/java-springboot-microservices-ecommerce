@@ -6,6 +6,7 @@ import com.eswar.orderservice.dto.OrderDto;
 import com.eswar.orderservice.dto.OrderItemDto;
 import com.eswar.orderservice.dto.OrderResponseDto;
 import com.eswar.orderservice.dto.PageResponse;
+import com.eswar.orderservice.entity.EventEntity;
 import com.eswar.orderservice.entity.OrderEntity;
 import com.eswar.orderservice.entity.OrderedItemEntity;
 import com.eswar.orderservice.entity.OrderedItemId;
@@ -13,35 +14,107 @@ import com.eswar.orderservice.exceptions.BusinessException;
 import com.eswar.orderservice.exceptions.ErrorCode;
 import com.eswar.orderservice.grpc.client.GrpcProductServiceClient;
 import com.eswar.orderservice.grpc.mapper.GrpcExceptionMapper;
+import com.eswar.orderservice.kafka.constatnts.EventStatus;
+import com.eswar.orderservice.kafka.constatnts.EventType;
 import com.eswar.orderservice.kafka.event.OrderCreatedEvent;
 import com.eswar.orderservice.kafka.event.OrderItemEvent;
+import com.eswar.orderservice.kafka.event.OrderStatusEvent;
 import com.eswar.orderservice.kafka.producer.OrderEventProducer;
+import com.eswar.orderservice.kafka.service.OrderKafkaService;
 import com.eswar.orderservice.mapper.IOrderMapper;
+import com.eswar.orderservice.repository.IEventRepository;
 import com.eswar.orderservice.repository.IOrderRepository;
 import com.eswar.orderservice.service.IOrderService;
 import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class OrderServiceImp implements IOrderService {
 
     private final IOrderRepository orderRepository;
+    private final IEventRepository eventRepository;
     private final IOrderMapper mapper;
-    private final OrderEventProducer orderEventProducer;
+     private final OrderKafkaService orderKafkaService;
     private final GrpcProductServiceClient grpcProductServiceClient;
 
+    @Autowired
+    @Lazy
+    private OrderServiceImp self;
+
+
+    @Transactional
+    public void handleOrderStatusEvent(OrderStatusEvent event) {
+
+        // Step A: Record Receipt (Independent Transaction)
+        // This ensures we have a record even if the rest fails
+        EventEntity eventEntity = self.recordEventReceipt(event);
+
+        // Step B: Idempotency Check
+        if (eventEntity.getStatus() == EventStatus.PROCESSED) {
+            log.info("Event {} already processed. Skipping.", event.eventId());
+            return;
+        }
+
+        try {
+            // Step C: Business Logic (Independent Transaction)
+            self.applyStatusUpdate(event, eventEntity);
+            log.info("Successfully updated order {} to status {}", event.orderId(), event.status());
+        } catch (Exception ex) {
+            // Step D: Record Failure (Independent Transaction)
+            self.recordEventFailure(eventEntity, ex.getMessage());
+            // We rethrow to trigger Kafka retry if necessary
+            throw ex;
+        }
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public EventEntity recordEventReceipt(OrderStatusEvent event) {
+        return eventRepository.findById(event.eventId())
+                .orElseGet(() -> {
+                    EventEntity entity = EventEntity.builder()
+                            .eventId(event.eventId())
+                            .orderId(event.orderId())
+                            .eventType(event.eventType())
+                            .status(EventStatus.RECEIVED)
+                            .payload(event.toString())
+                            .build();
+                    return eventRepository.save(entity);
+                });
+    }
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void applyStatusUpdate(OrderStatusEvent event, EventEntity entity) {
+        // Call your existing business logic
+        updateOrderStatus(
+                event.orderId(),
+                event.eventType(),
+                event.status(),
+                event.paymentReference()
+        );
+
+        entity.setStatus(EventStatus.PROCESSED);
+        eventRepository.save(entity);
+    }
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void recordEventFailure(EventEntity entity, String error) {
+        entity.setStatus(EventStatus.FAILED);
+        entity.setErrorMessage(error);
+        eventRepository.save(entity);
+    }
     // ================= HELPER =================
 
     private UUID parseUUID(String id, ErrorCode errorCode) {
@@ -71,7 +144,7 @@ public class OrderServiceImp implements IOrderService {
         order.setStatus(OrderStatus.CREATED);
         order.setCustomerId(customerId);
 
-        List<OrderedItemEntity> items = new ArrayList<>();
+        Set<OrderedItemEntity> items = new LinkedHashSet<>();
         BigDecimal totalAmount = BigDecimal.ZERO;
 
         for (OrderItemDto itemDto : dto.items()) {
@@ -99,7 +172,7 @@ public class OrderServiceImp implements IOrderService {
 
         OrderEntity saved = orderRepository.save(order);
 
-        publishOrderCreatedEvent(saved, totalAmount);
+        orderKafkaService.sendOrderCreatedEvent(saved, totalAmount);
 
         return mapper.toResponse(saved);
     }
@@ -107,6 +180,7 @@ public class OrderServiceImp implements IOrderService {
     // ================= GET =================
 
     @Override
+    @Transactional(readOnly = true)
     public PageResponse<OrderResponseDto> getALlOrders(Pageable pageable) {
 
         Page<OrderEntity> page = orderRepository.findAll(pageable);
@@ -147,7 +221,7 @@ public class OrderServiceImp implements IOrderService {
             throw new BusinessException(ErrorCode.ORDER_CANNOT_UPDATE);
         }
 
-        List<OrderedItemEntity> items = new ArrayList<>();
+        Set<OrderedItemEntity> items = new LinkedHashSet<>();
         BigDecimal totalAmount = BigDecimal.ZERO;
 
         for (OrderItemDto itemDto : dto.items()) {
@@ -176,7 +250,7 @@ public class OrderServiceImp implements IOrderService {
 
         OrderEntity saved = orderRepository.save(existing);
 
-        publishOrderCreatedEvent(saved, totalAmount);
+        orderKafkaService.sendOrderCreatedEvent(saved, totalAmount);
 
         return mapper.toResponse(saved);
     }
@@ -204,6 +278,7 @@ public class OrderServiceImp implements IOrderService {
     // ================= USER =================
 
     @Override
+    @Transactional(readOnly = true)
     public boolean isOrderOwnedByUser(String orderId, String userId) {
 
         try {
@@ -217,6 +292,7 @@ public class OrderServiceImp implements IOrderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PageResponse<OrderResponseDto> getOrdersByCustomerId(String customerId, Pageable pageable) {
 
         UUID id = parseUUID(customerId, ErrorCode.INVALID_USER_ID);
@@ -237,27 +313,29 @@ public class OrderServiceImp implements IOrderService {
 
     @Override
     @Transactional
-    public void updateOrderStatus(UUID orderId, UUID eventId, String eventType, String status, String paymentReference) {
+    public void updateOrderStatus(UUID orderId,
+                                  EventType eventType,
+                                  EventStatus status,
+                                  String paymentReference) {
 
+
+        // ✅ 3. Fetch order
         OrderEntity order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ORDER_NOT_FOUND));
 
-        if (order.getProcessedEventIds().contains(eventId)) {
-            return;
-        }
-
+        // ✅ 4. Business logic
         switch (eventType) {
 
-            case "INVENTORY" -> {
-                if ("SUCCESS".equals(status)) {
+            case EventType.INVENTORY-> {
+                if (EventStatus.PROCESSED.equals(status)) {
                     order.setStatus(OrderStatus.STOCK_RESERVED);
                 } else {
                     order.setStatus(OrderStatus.FAILED);
                 }
             }
 
-            case "PAYMENT" -> {
-                if ("SUCCESS".equals(status)) {
+            case EventType.PAYMENT-> {
+                if (EventStatus.PROCESSED.equals(status)) {
                     order.setStatus(OrderStatus.CONFIRMED);
                     order.setPaymentReference(paymentReference);
                 } else {
@@ -268,11 +346,10 @@ public class OrderServiceImp implements IOrderService {
             default -> throw new BusinessException(ErrorCode.INVALID_REQUEST);
         }
 
-        order.getProcessedEventIds().add(eventId);
-
         orderRepository.save(order);
-    }
 
+
+    }
     // ================= PRIVATE =================
 
     private ProductResponse getProductOrThrow(UUID productId) {
@@ -283,22 +360,5 @@ public class OrderServiceImp implements IOrderService {
         }
     }
 
-    private void publishOrderCreatedEvent(@NonNull OrderEntity order, BigDecimal totalAmount) {
 
-        List<OrderItemEvent> items = order.getItems().stream()
-                .map(i -> new OrderItemEvent(
-                        i.getId().getProductId(),
-                        i.getQuantity()
-                ))
-                .toList();
-
-        OrderCreatedEvent event = new OrderCreatedEvent(
-                order.getId(),
-                order.getCustomerId(),
-                totalAmount,
-                items
-        );
-
-        orderEventProducer.sendOrderCreatedEvent(event);
-    }
 }

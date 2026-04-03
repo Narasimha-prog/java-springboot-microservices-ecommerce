@@ -1,6 +1,6 @@
-package com.eswar.inventoryservice.exception;
+package com.eswar.swagger_service.exception;
 
-import com.eswar.inventoryservice.exception.ErrorCode;
+import com.eswar.swagger_service.exception.ErrorCode;
 import org.springframework.http.HttpStatus;
 
 public class BusinessException extends RuntimeException {
@@ -20,15 +20,12 @@ public class BusinessException extends RuntimeException {
         super(errorCode.getMessage() + ": " + detail);
         this.errorCode = errorCode;
     }
+
     public String getErrorCode() {
         return errorCode.name();
     }
 
     public HttpStatus getStatus() {
         return errorCode.getStatus(); // 🔥 dynamic
-    }
-
-    public ErrorCode getErrorEnum() {
-        return errorCode;
     }
 }

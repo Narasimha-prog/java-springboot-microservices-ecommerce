@@ -9,11 +9,14 @@ public enum ErrorCode {
     INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "Invalid credentials"),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "Invalid token"),
     TOKEN_MALFORMED(HttpStatus.UNAUTHORIZED, "Malformed token"),
+    ACCESS_DENIED(HttpStatus.BAD_REQUEST,"Access is not allowed"),
 
     // service (VERY IMPORTANT for microservices)
     SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "Service temporarily unavailable"),
     DOWNSTREAM_SERVICE_ERROR(HttpStatus.BAD_GATEWAY, "Error from downstream service"),
     TIMEOUT(HttpStatus.GATEWAY_TIMEOUT, "Request timeout"),
+    PRODUCT_NOT_FOUND( HttpStatus.NOT_FOUND, "Product not found: "),
+    INSUFFICIENT_STOCK(HttpStatus.BAD_REQUEST,"Insufficient Stock"),
 
     // validation
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "Invalid request"),

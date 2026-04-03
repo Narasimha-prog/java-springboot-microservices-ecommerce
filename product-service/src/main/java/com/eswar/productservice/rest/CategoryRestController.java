@@ -39,7 +39,8 @@ public class CategoryRestController {
 
     @GetMapping
     @Operation(summary = "get  all Products",description = "fetching all products")
-    public ResponseEntity< List<CategoryResponseDto>> getAll() {
+    public ResponseEntity<List<CategoryResponseDto>> getAll() {
+
         return  ResponseEntity.ok( service.getAll());
     }
 

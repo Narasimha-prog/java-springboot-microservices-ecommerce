@@ -21,11 +21,11 @@ public class PaymentValidator {
             throw new BusinessException(ErrorCode.INVALID_REQUEST);
         }
 
-        if (isBlank(request.razorpayOrderId())) {
+        if (isBlank(request.razorpayOrderId()) || !request.razorpayOrderId().startsWith("order_")){
             throw new BusinessException(ErrorCode.INVALID_REQUEST);
         }
 
-        if (isBlank(request.razorpayPaymentId())) {
+        if (isBlank(request.razorpayPaymentId() )|| request.razorpayPaymentId().startsWith("pay_")) {
             throw new BusinessException(ErrorCode.INVALID_REQUEST);
         }
 

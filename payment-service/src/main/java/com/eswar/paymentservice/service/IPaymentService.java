@@ -14,7 +14,7 @@ import java.security.Principal;
 import java.util.UUID;
 
 public interface IPaymentService {
-    void processPayment(OrderCreatedEvent event);
+    void handleOrderCreatedEvent(OrderCreatedEvent event);
 
     PaymentCreateResponse createPayment(UUID orderId, Principal principal) throws RazorpayException;
 

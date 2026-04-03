@@ -1,6 +1,7 @@
 package com.eswar.paymentservice.kafka.producer;
 
 import com.eswar.paymentservice.kafka.constants.EventStatus;
+import com.eswar.paymentservice.kafka.constants.EventType;
 import com.eswar.paymentservice.kafka.events.OrderStatusEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -13,13 +14,13 @@ import java.util.UUID;
 public class PaymentEventProducer {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
-    public void sendPaymentStatus(UUID orderId, EventStatus status, String message,String paymentReference) {
 
-        OrderStatusEvent event = new OrderStatusEvent(
-                UUID.randomUUID(),
+    public void sendPaymentStatus(UUID eventId,UUID orderId, EventStatus status, String message,String paymentReference) {
+
+        OrderStatusEvent event = new OrderStatusEvent(eventId,
                 orderId,
-                "PAYMENT",
-                status.name(),
+                EventType.PAYMENT,
+                status,
                 message,
                 paymentReference
         );

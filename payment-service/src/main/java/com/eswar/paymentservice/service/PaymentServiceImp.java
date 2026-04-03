@@ -3,14 +3,18 @@ package com.eswar.paymentservice.service;
 import com.eswar.paymentservice.constatns.PaymentStatus;
 import com.eswar.paymentservice.constatns.WebhookStatus;
 import com.eswar.paymentservice.dto.*;
+import com.eswar.paymentservice.entity.EventEntity;
 import com.eswar.paymentservice.entity.PaymentEntity;
 import com.eswar.paymentservice.entity.WebhookEventEntity;
 import com.eswar.paymentservice.exception.BusinessException;
 import com.eswar.paymentservice.exception.ErrorCode;
 import com.eswar.paymentservice.kafka.constants.EventStatus;
+import com.eswar.paymentservice.kafka.constants.EventType;
 import com.eswar.paymentservice.kafka.events.OrderCreatedEvent;
+import com.eswar.paymentservice.kafka.events.OrderStatusEvent;
 import com.eswar.paymentservice.kafka.producer.PaymentEventProducer;
 import com.eswar.paymentservice.mapper.IPaymentMapper;
+import com.eswar.paymentservice.repository.IEventRepository;
 import com.eswar.paymentservice.repository.IPaymentRepository;
 import com.eswar.paymentservice.repository.IWebHookEventRepository;
 import com.eswar.paymentservice.validation.PaymentValidator;
@@ -18,14 +22,19 @@ import com.razorpay.RazorpayException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.security.Principal;
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -45,6 +54,12 @@ public class PaymentServiceImp implements IPaymentService {
     private final RazorpayService razorpayService;
     private final IPaymentMapper mapper;
     private final IWebHookEventRepository webHookEventRepository;
+    private final IEventRepository eventRepository;
+
+
+    @Autowired
+    @Lazy
+    private PaymentServiceImp self;
 
     // ================= HELPER =================
 
@@ -63,19 +78,83 @@ public class PaymentServiceImp implements IPaymentService {
     }
 
     // ================= KAFKA =================
-
     @Override
     @Transactional
-            //for event action when order created
-    public void processPayment(OrderCreatedEvent event) {
-        PaymentEntity payment = new PaymentEntity();
-        payment.setOrderId(event.orderId());
-        payment.setUserId(event.customerId());
-        payment.setAmount(event.totalAmount());
-        payment.setStatus(PaymentStatus.INITIATED);
-        paymentRepository.save(payment);
+    public void handleOrderCreatedEvent(OrderCreatedEvent event) {
+
+        // Step A: Record Receipt (Independent Transaction)
+        // This ensures we have a record even if the rest fails
+        EventEntity eventEntity = self.recordEventReceipt(event);
+
+        // Step B: Idempotency Check
+        if (eventEntity.getStatus() == EventStatus.PROCESSED) {
+            log.info("Event {} already processed. Skipping.", event.eventId());
+            return;
+        }
+
+        try {
+            // Step C: Business Logic (Independent Transaction)
+            self.applyStatusUpdate(event, eventEntity);
+            log.info("Successfully updated order {} to status {}", event.orderId(), event.status());
+        } catch (Exception ex) {
+            // Step D: Record Failure (Independent Transaction)
+            self.recordEventFailure(eventEntity, ex.getMessage());
+            // We rethrow to trigger Kafka retry if necessary
+            throw ex;
+        }
     }
 
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public EventEntity recordEventReceipt(OrderCreatedEvent event) {
+        return eventRepository.findById(event.eventId())
+                .map(existing -> {
+                    log.info("Retry detected for event {}. Adding traceId {}.",
+                            event.eventId(), event.traceId());
+                    existing.getTraceIds().add(event.traceId());
+                    return eventRepository.save(existing);
+                })
+                .orElseGet(() -> {
+                    EventEntity newEntity = EventEntity.builder()
+                            .eventId(event.eventId())
+                            .orderId(event.orderId())
+                            .eventType(EventType.PAYMENT)
+                            .status(EventStatus.RECEIVED)
+                            .payload(event.toString())
+                            .traceIds(new HashSet<>(Set.of(event.traceId())))
+                            .build();
+                    return eventRepository.save(newEntity);
+                });
+    }
+
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void processPaymentInitialization(OrderCreatedEvent event, EventEntity entity) {
+
+        // Find or Create Payment for this Order
+        PaymentEntity payment = paymentRepository.findByOrderId(event.orderId())
+                .orElseGet(() -> {
+                    PaymentEntity p = new PaymentEntity();
+                    p.setOrderId(event.orderId());
+                    p.setUserId(event.customerId());
+                    p.setAmount(event.totalAmount());
+                    return p;
+                });
+
+        // Update status and link to the current event
+        payment.setStatus(PaymentStatus.INITIATED);
+        paymentRepository.save(payment);
+
+        // Mark Event as Processed
+        entity.setStatus(EventStatus.PROCESSED);
+        eventRepository.save(entity);
+    }
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void recordEventFailure(EventEntity entity, String error) {
+        entity.setStatus(EventStatus.FAILED);
+        entity.setErrorMessage(error);
+        eventRepository.save(entity);
+    }
     // ================= USER =================
 
     @Override
@@ -124,7 +203,7 @@ public class PaymentServiceImp implements IPaymentService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional()
     //verify payment details from frontend
     public PaymentResponse verifyPayment(PaymentVerifyRequest request, Principal principal) {
 
@@ -155,10 +234,11 @@ public class PaymentServiceImp implements IPaymentService {
         if (isValid) {
             payment.setStatus(PaymentStatus.PENDING);
             payment.setRazorpayPaymentId(request.razorpayPaymentId());
+            paymentRepository.save(payment);
             return new PaymentResponse("SUCCESS", "Payment verified is pending from webhook");
         } else {
             payment.setStatus(PaymentStatus.FAILED);
-            producer.sendPaymentStatus(payment.getOrderId(),EventStatus.FAILED,"Payment Failed or Declined ",null);
+            paymentRepository.save(payment);
             return new PaymentResponse("FAILED", "Invalid payment signature");
         }
     }
@@ -289,7 +369,8 @@ public class PaymentServiceImp implements IPaymentService {
                     .findByRazorpayOrderId(razorpayOrderId)
                     .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_NOT_FOUND));
 
-            if (payment.getStatus() == PaymentStatus.SUCCESS) {
+            if (payment.getStatus() == PaymentStatus.SUCCESS ||
+                    payment.getStatus() == PaymentStatus.FAILED) {
                 webhookEvent.setStatus(WebhookStatus.PROCESSED);
                 return;
             }
@@ -298,11 +379,15 @@ public class PaymentServiceImp implements IPaymentService {
 
                 payment.setStatus(PaymentStatus.SUCCESS);
                 payment.setRazorpayPaymentId(paymentId);
-
+                if (payment.getLastEventId() == null) {
+                    log.error("Missing eventId for order {}", payment.getOrderId());
+                    throw new BusinessException(ErrorCode.INVALID_REQUEST);
+                }
                 producer.sendPaymentStatus(
+                        payment.getLastEventId(),
                         payment.getOrderId(),
-                        EventStatus.SUCCESS,
-                        "Payment Successful",
+                        EventStatus.PROCESSED,
+                        "Payment is successfully",
                         paymentId
                 );
 
@@ -310,7 +395,12 @@ public class PaymentServiceImp implements IPaymentService {
 
                 payment.setStatus(PaymentStatus.FAILED);
 
+                if (payment.getLastEventId() == null) {
+                    log.error("Missing eventId for order {}", payment.getOrderId());
+                    throw new BusinessException(ErrorCode.INVALID_REQUEST);
+                }
                 producer.sendPaymentStatus(
+                        payment.getLastEventId(),
                         payment.getOrderId(),
                         EventStatus.FAILED,
                         "Payment Failed",

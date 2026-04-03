@@ -55,9 +55,6 @@ public class PaymentEntity  extends AbstractAuditingEntity {
     @Column(unique = true, nullable = false,length = 50)
     private String razorpayPaymentId;
 
-    @Column(length = 100)
-    private String lastEventId;
-
     @Version
     private Long version;
 }

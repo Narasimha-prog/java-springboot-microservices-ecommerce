@@ -18,6 +18,6 @@ public class OrderCreatedConsumer {
     public void consume(OrderCreatedEvent event) {
         log.info("Received order event: {}", event);
 
-        paymentService.processPayment(event);
+        paymentService.handleOrderCreatedEvent(event);
     }
 }

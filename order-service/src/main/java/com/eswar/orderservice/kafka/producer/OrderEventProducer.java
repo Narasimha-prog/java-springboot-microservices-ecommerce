@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class OrderEventProducer {
@@ -13,7 +15,18 @@ public class OrderEventProducer {
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public void sendOrderCreatedEvent(OrderCreatedEvent event) {
+        // Generate a new traceId for this send attempt
+        UUID newTraceId = UUID.randomUUID();
 
-        kafkaTemplate.send("order-created", event);
+        OrderCreatedEvent eventWithNewTraceId = new OrderCreatedEvent(
+                event.eventId(),   // same correlationId for workflow/order
+                newTraceId,       // new traceId for this attempt
+                event.orderId(),
+                event.customerId(),
+                event.totalAmount(),
+                event.items()
+        );
+
+        kafkaTemplate.send("order-created", eventWithNewTraceId);
     }
 }

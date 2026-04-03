@@ -15,7 +15,7 @@ public interface IPaymentMapper {
     PaymentResponse toResponse(PaymentEntity entity);
 
     // Optional: Create response for frontend
-    @Mapping(target = "razorpayOrderId", source = "transactionId")
+    @Mapping(target = "razorpayOrderId", source = "razorpayOrderId")
     @Mapping(target = "amount", expression = "java(entity.getAmount().longValue() * 100)")
     @Mapping(target = "currency", constant = "INR")
     @Mapping(target = "key", ignore = true) // set manually

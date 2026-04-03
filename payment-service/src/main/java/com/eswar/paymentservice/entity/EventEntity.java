@@ -1,11 +1,13 @@
 package com.eswar.paymentservice.entity;
 
-import com.eswar.inventoryservice.audit.BaseEntity;
-import com.eswar.inventoryservice.kafka.constants.EventStatus;
-import com.eswar.inventoryservice.kafka.constants.EventType;
+
+import com.eswar.paymentservice.kafka.constants.EventStatus;
+import com.eswar.paymentservice.kafka.constants.EventType;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -21,12 +23,15 @@ import java.util.UUID;
 @Builder
 @ToString(onlyExplicitlyIncluded = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
-public class EventEntity extends BaseEntity {
+public class EventEntity extends com.eswar.paymentservice.audit.BaseEntity {
 
     @Id
     @EqualsAndHashCode.Include
     @ToString.Include
     private UUID eventId; // 🔥 comes from Kafka
+
+    @ToString.Include
+    private UUID traceId;
 
     @Column(nullable = false)
     @ToString.Include
@@ -48,4 +53,9 @@ public class EventEntity extends BaseEntity {
 
     @ToString.Include
     private String errorMessage;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "payment_event_trace_ids", joinColumns = @JoinColumn(name = "event_id"))
+    @Column(name = "trace_id")
+    private Set<UUID> traceIds = new HashSet<>(); // store all traceIds
 }

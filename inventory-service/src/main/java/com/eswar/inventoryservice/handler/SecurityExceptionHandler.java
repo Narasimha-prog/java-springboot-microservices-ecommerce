@@ -1,10 +1,12 @@
 package com.eswar.inventoryservice.handler;
 
 
-import com.eswar.userservice.exception.ErrorCode;
+
+import com.eswar.inventoryservice.exception.ErrorCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.access.AccessDeniedException;
@@ -26,14 +28,14 @@ public class SecurityExceptionHandler implements AuthenticationEntryPoint, Acces
     }
 
     @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response,
-                         AuthenticationException authException) throws IOException {
+    public void commence(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
+                         @NonNull AuthenticationException authException) throws IOException {
         writeResponse(response, ErrorCode.INVALID_CREDENTIALS, authException.getMessage());
     }
 
     @Override
-    public void handle(HttpServletRequest request, HttpServletResponse response,
-                       AccessDeniedException accessDeniedException) throws IOException {
+    public void handle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
+                       @NonNull AccessDeniedException accessDeniedException) throws IOException {
         writeResponse(response, ErrorCode.ACCESS_DENIED,
                 accessDeniedException.getMessage() != null
                         ? accessDeniedException.getMessage()

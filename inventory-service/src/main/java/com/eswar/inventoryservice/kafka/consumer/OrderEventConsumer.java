@@ -5,32 +5,41 @@ import com.eswar.inventoryservice.kafka.event.StockRejectedEvent;
 import com.eswar.inventoryservice.kafka.event.StockReservedEvent;
 import com.eswar.inventoryservice.service.IInventoryService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class OrderEventConsumer {
 
     private final IInventoryService inventoryService;
     private final KafkaTemplate<String,Object> kafkaTemplate;
 
     @KafkaListener(topics = "order-created",groupId = "inventory-group")
-    public void handleOrderCreated(OrderCreatedEvent event) {
+    public void handleOrderCreated(OrderCreatedEvent event, Acknowledgment ack) {
 
-        boolean reserved = inventoryService.reserveStock(event);
+        try {
+            // Call the Orchestrator
+            inventoryService.handleOrderCreatedEvent(event);
 
-        if(reserved){
-            kafkaTemplate.send(
-                    "stock-reserved",
-                    new StockReservedEvent(event.orderId())
-            );
-        }else{
-            kafkaTemplate.send(
-                    "stock-rejected",
-                    new StockRejectedEvent(event.orderId(),"Stock not available")
-            );
+            // 🔹 SUCCESS ACK: Business logic worked, offset moves forward.
+            ack.acknowledge();
+            log.info("Successfully processed and acknowledged: {}", event.eventId());
+
+        } catch (Exception e) {
+            log.error("Error in inventory processing for {}: {}", event.eventId(), e.getMessage());
+
+        /* 🔹 FAILURE ACK:
+           Because 'recordFailure' already saved the error to our DB,
+           and the 'ErrorHandler' moved the message to the DLQ (after 0,1,2 retries),
+           we MUST acknowledge here to prevent an infinite loop.
+        */
+            ack.acknowledge();
         }
+
     }
 }

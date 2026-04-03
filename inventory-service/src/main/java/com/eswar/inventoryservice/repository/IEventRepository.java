@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;
 
-public interface IInventoryEventRepository extends JpaRepository<EventEntity, UUID> {
+public interface IEventRepository extends JpaRepository<EventEntity, UUID> {
 }

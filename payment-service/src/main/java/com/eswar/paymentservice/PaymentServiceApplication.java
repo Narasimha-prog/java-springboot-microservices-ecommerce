@@ -57,6 +57,7 @@ public class PaymentServiceApplication {
 			properties.put("DB_URL", Objects.requireNonNull(dotenv.get("DB_URL")));
 			properties.put("DB_USER_NAME", Objects.requireNonNull(dotenv.get("DB_USER_NAME")));
 			properties.put("DB_PASSWORD", Objects.requireNonNull(dotenv.get("DB_PASSWORD")));
+			properties.put("WEB",Objects.requireNonNull(dotenv.get("WEB")));
 
 			// Add as first property source to override defaults
 			ctx.getEnvironment()

@@ -25,7 +25,7 @@ public class RazorpayConfig {
     CommandLineRunner runner(FakePaymentGenerator generator) {
         return args -> {
             var fake = generator.generate();
-
+            System.out.println("signature for payment: "+fake.getWebSignature());
             System.out.println("OrderId: " + fake.getOrderId());
             System.out.println("PaymentId: " + fake.getPaymentId());
             System.out.println("Signature: " + fake.getSignature());

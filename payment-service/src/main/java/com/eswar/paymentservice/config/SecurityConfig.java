@@ -46,6 +46,7 @@ public class SecurityConfig {
                                 .requestMatchers(
                                         ACTUATOR_WHITELIST
                                 ).permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/v1/payments/webhook").permitAll()
                                 .requestMatchers("/docs/**", "/css/**", "/js/**").permitAll()
                                 // Public product view
                                 .requestMatchers(HttpMethod.GET, "/api/v1/payments").hasRole("ADMIN")

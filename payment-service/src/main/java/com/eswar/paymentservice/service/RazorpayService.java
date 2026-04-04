@@ -6,6 +6,7 @@ import com.razorpay.RazorpayException;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Mac;
@@ -15,12 +16,16 @@ import java.util.HexFormat;
 
 @Service
 @RequiredArgsConstructor
+@Profile("dev")
 public class RazorpayService {
 
     private final RazorpayClient razorpayClient;
 
     @Value("${razorpay.secret}")
     private String secret;
+
+    @Value("${razorpay.webhook.secret}")
+    private String webhookSecret;
 
     public String createOrder(BigDecimal amount,String currency) throws RazorpayException {
 
@@ -86,7 +91,7 @@ public class RazorpayService {
     //  Webhook verification
     public boolean verifyWebhookSignature(String payload, String signature) {
 
-        String generated = hmacSHA256(payload, secret);
+        String generated = hmacSHA256(payload, webhookSecret);
 
         return generated.equals(signature);
     }

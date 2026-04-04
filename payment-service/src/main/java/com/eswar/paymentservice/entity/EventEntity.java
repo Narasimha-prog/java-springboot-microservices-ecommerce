@@ -11,10 +11,10 @@ import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(name = "inventory_events",
+@Table(name = "payment_events",
         indexes = {
-                @Index(name = "idx_event_id", columnList = "eventId"),
-                @Index(name = "idx_status", columnList = "status")
+                @Index(name = "payment_idx_event_id", columnList = "eventId"),
+                @Index(name = "payment_idx_status", columnList = "status")
         })
 @Getter
 @Setter
@@ -52,6 +52,7 @@ public class EventEntity extends com.eswar.paymentservice.audit.BaseEntity {
     private String payload; // optional (debugging)
 
     @ToString.Include
+    @Column(columnDefinition = "TEXT")
     private String errorMessage;
 
     @ElementCollection(fetch = FetchType.EAGER)

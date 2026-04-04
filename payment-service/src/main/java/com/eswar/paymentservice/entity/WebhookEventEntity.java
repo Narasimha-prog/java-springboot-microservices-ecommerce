@@ -13,9 +13,9 @@ import java.util.UUID;
 @Entity
 @Table(name = "webhook_events",
         indexes = {
-                @Index(name = "idx_event_id", columnList = "eventId"),
+                @Index(name = "webhook_idx_event_id", columnList = "eventId"),
                 @Index(name = "idx_event_type", columnList = "eventType"),
-                @Index(name = "idx_status", columnList = "status"),
+                @Index(name = "webhook_idx_status", columnList = "status"),
                 @Index(name = "idx_resource_id", columnList = "resourceId")
         })
 @Getter
@@ -32,7 +32,8 @@ public class WebhookEventEntity extends AbstractAuditingEntity {
 
     @Column(nullable = false)
     private String eventType;
-
+    @Column(nullable = false)
+    private UUID orderId;
     // Full payload (store for debugging/replay)
     @Lob
     @Column(nullable = false)

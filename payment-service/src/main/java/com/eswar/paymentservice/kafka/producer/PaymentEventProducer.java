@@ -15,16 +15,10 @@ public class PaymentEventProducer {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public void sendPaymentStatus(UUID eventId,UUID orderId, EventStatus status, String message,String paymentReference) {
-
-        OrderStatusEvent event = new OrderStatusEvent(eventId,
-                orderId,
-                EventType.PAYMENT,
-                status,
-                message,
-                paymentReference
-        );
+    public void sendPaymentStatus(OrderStatusEvent event) {
 
         kafkaTemplate.send("order-events", event);
+
+
     }
 }

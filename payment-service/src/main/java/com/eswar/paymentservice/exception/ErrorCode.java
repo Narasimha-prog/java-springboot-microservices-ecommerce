@@ -25,6 +25,10 @@ public enum ErrorCode {
  PAYMENT_ALREADY_PROCESSED(HttpStatus.CONFLICT, "Payment already completed"),
  PAYMENT_ALREADY_VERIFIED(HttpStatus.CONFLICT, "Payment already verified"),
 
+    //kfka
+    EVENT_NOT_FOUND(HttpStatus.NOT_FOUND,"Event is not there"),
+
+
  // 💰 Razorpay
  INVALID_PAYMENT_SIGNATURE(HttpStatus.BAD_REQUEST, "Invalid payment signature"),
  INVALID_WEBHOOK_SIGNATURE(HttpStatus.UNAUTHORIZED, "Invalid webhook signature"),

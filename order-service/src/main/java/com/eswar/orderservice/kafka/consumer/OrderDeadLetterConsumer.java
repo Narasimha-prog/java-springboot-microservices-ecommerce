@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class OrderDeadLetterConsumer {
 
-    @KafkaListener(topics = "created-dlt", groupId = "order-dlq-group")
+    @KafkaListener(topics = "order-events-dlt", groupId = "order-dlq-group")
     public void handleDeadLetters(
             com.eswar.orderservice.kafka.event.OrderCreatedEvent event,
             // Use the EXACT strings from your terminal output

@@ -48,11 +48,11 @@ public class PaymentEntity  extends AbstractAuditingEntity {
     private PaymentStatus status;
 
     // ✅ Razorpay Order ID
-    @Column(unique = true, nullable = false,length = 50)
+    @Column(nullable = true,length = 50)
     private String razorpayOrderId;
 
     // ✅ Razorpay Payment ID
-    @Column(unique = true, nullable = false,length = 50)
+    @Column( nullable = true,length = 50)
     private String razorpayPaymentId;
 
     @Version

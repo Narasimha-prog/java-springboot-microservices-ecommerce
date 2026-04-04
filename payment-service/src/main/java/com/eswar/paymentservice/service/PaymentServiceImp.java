@@ -13,6 +13,7 @@ import com.eswar.paymentservice.kafka.constants.EventType;
 import com.eswar.paymentservice.kafka.events.OrderCreatedEvent;
 import com.eswar.paymentservice.kafka.events.OrderStatusEvent;
 import com.eswar.paymentservice.kafka.producer.PaymentEventProducer;
+import com.eswar.paymentservice.kafka.service.PaymentKafkaService;
 import com.eswar.paymentservice.mapper.IPaymentMapper;
 import com.eswar.paymentservice.repository.IEventRepository;
 import com.eswar.paymentservice.repository.IPaymentRepository;
@@ -55,6 +56,7 @@ public class PaymentServiceImp implements IPaymentService {
     private final IPaymentMapper mapper;
     private final IWebHookEventRepository webHookEventRepository;
     private final IEventRepository eventRepository;
+    private final PaymentKafkaService paymentKafkaService;
 
 
     @Autowired
@@ -94,11 +96,12 @@ public class PaymentServiceImp implements IPaymentService {
 
         try {
             // Step C: Business Logic (Independent Transaction)
-            self.applyStatusUpdate(event, eventEntity);
-            log.info("Successfully updated order {} to status {}", event.orderId(), event.status());
+            self.processPaymentInitialization(event, eventEntity);
+            log.info("Successfully updated order {} to status {}", event.orderId(),eventEntity.getStatus());
         } catch (Exception ex) {
             // Step D: Record Failure (Independent Transaction)
             self.recordEventFailure(eventEntity, ex.getMessage());
+            log.warn("Error while handle event from orderCreated-event: ",ex);
             // We rethrow to trigger Kafka retry if necessary
             throw ex;
         }
@@ -127,7 +130,53 @@ public class PaymentServiceImp implements IPaymentService {
                 });
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public WebhookEventEntity recordWebhookReceipt(UUID orderId,String eventId, String payload, JSONObject json) {
+        return webHookEventRepository.findByEventId(eventId)
+                .orElseGet(() -> {
+                    WebhookEventEntity entity = new WebhookEventEntity();
+                    entity.setOrderId(orderId);
+                    entity.setEventId(eventId);
+                    entity.setPayload(payload);
+                    entity.setEventType(json.getString("event"));
+                    entity.setStatus(WebhookStatus.RECEIVED);
+                    return webHookEventRepository.save(entity);
+                });
+    }
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void processWebhookBusinessLogic(JSONObject eventJson, WebhookEventEntity webhookEvent) {
+        // Extract Order ID from payload
+        String razorpayOrderId = eventJson.getJSONObject("payload")
+                .getJSONObject("payment")
+                .getJSONObject("entity")
+                .getString("order_id");
 
+        // 1. Find the Business Entity
+        PaymentEntity payment = paymentRepository.findByRazorpayOrderId(razorpayOrderId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_NOT_FOUND));
+
+        // 2. 🔥 THE BRIDGE: Find the original Kafka Event ID from our Event Ledger
+        EventEntity originalEvent = eventRepository.findFirstByOrderIdAndEventTypeOrderByCreatedAtDesc(
+                        payment.getOrderId(), EventType.PAYMENT)
+                .orElseThrow(() -> new BusinessException(ErrorCode.EVENT_NOT_FOUND));
+
+        String eventType = eventJson.getString("event");
+
+        if ("payment.captured".equals(eventType)) {
+            payment.setStatus(PaymentStatus.SUCCESS);
+            // 🚀 Call Kafka Service using data from EventEntity
+            paymentKafkaService.sendOrderStatusEvent(originalEvent,EventStatus.PROCESSED,"Payment is success",payment.getRazorpayPaymentId());
+        } else if ("payment.failed".equals(eventType)) {
+            payment.setStatus(PaymentStatus.FAILED);
+            paymentKafkaService.sendOrderStatusEvent(originalEvent,EventStatus.FAILED,"Payment is failed",null);
+        }
+
+        // 3. Update Statuses
+        paymentRepository.save(payment);
+        webhookEvent.setStatus(WebhookStatus.PROCESSED);
+        webhookEvent.setProcessedAt(Instant.now());
+        webHookEventRepository.save(webhookEvent);
+    }
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void processPaymentInitialization(OrderCreatedEvent event, EventEntity entity) {
 
@@ -138,6 +187,7 @@ public class PaymentServiceImp implements IPaymentService {
                     p.setOrderId(event.orderId());
                     p.setUserId(event.customerId());
                     p.setAmount(event.totalAmount());
+                    p.setCurrency("INR");
                     return p;
                 });
 
@@ -149,12 +199,7 @@ public class PaymentServiceImp implements IPaymentService {
         entity.setStatus(EventStatus.PROCESSED);
         eventRepository.save(entity);
     }
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void recordEventFailure(EventEntity entity, String error) {
-        entity.setStatus(EventStatus.FAILED);
-        entity.setErrorMessage(error);
-        eventRepository.save(entity);
-    }
+
     // ================= USER =================
 
     @Override
@@ -310,117 +355,66 @@ public class PaymentServiceImp implements IPaymentService {
     @Override
     @Transactional
     public void handleWebhook(String payload, String signature) {
-
+        // 1. Validate & Verify (No DB state yet)
         validator.validateWebhook(payload, signature);
-
-        boolean isValid = razorpayService.verifyWebhookSignature(payload, signature);
-
-        if (!isValid) {
+        if (!razorpayService.verifyWebhookSignature(payload, signature)) {
             throw new BusinessException(ErrorCode.INVALID_WEBHOOK_SIGNATURE);
         }
 
-        JSONObject event;
+        JSONObject eventJson = new JSONObject(payload);
+        String razorpayEventId = eventJson.getString("id");
+        String razorpayOrderId = eventJson.getJSONObject("payload")
+                .getJSONObject("payment")
+                .getJSONObject("entity")
+                .getString("order_id");
+        PaymentEntity payment = paymentRepository.findByRazorpayOrderId(razorpayOrderId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_NOT_FOUND));
 
-        try {
-            event = new JSONObject(payload);
-        } catch (Exception e) {
-            log.error("Invalid webhook payload: {}", payload, e);
-            throw new BusinessException(ErrorCode.INVALID_WEBHOOK_PAYLOAD);
-        }
+        // 2. Step A: Record Webhook Receipt (Independent Transaction)
+        WebhookEventEntity webhookEvent = self.recordWebhookReceipt(payment.getOrderId(),razorpayEventId, payload, eventJson);
 
-        String eventId = event.getString("id");
-        String eventType = event.getString("event");
-
-        // ✅ Duplicate check
-        if (webHookEventRepository.findByEventId(eventId).isPresent()) {
-            log.info("Duplicate webhook received: {}", eventId);
+        // 3. Step B: Skip if already done
+        if (webhookEvent.getStatus() == WebhookStatus.PROCESSED) {
+            log.info("Webhook {} already processed. Skipping.", razorpayEventId);
             return;
         }
 
-        JSONObject paymentJson;
-
         try {
-            paymentJson = event
-                    .getJSONObject("payload")
-                    .getJSONObject("payment")
-                    .getJSONObject("entity");
-        } catch (Exception e) {
-            log.error("Malformed webhook structure: {}", payload, e);
-            throw new BusinessException(ErrorCode.INVALID_WEBHOOK_PAYLOAD);
+            // 4. Step C: Apply Business Logic & Notify Kafka (Independent Transaction)
+            self.processWebhookBusinessLogic(eventJson, webhookEvent);
+        } catch (Exception ex) {
+            // 5. Step D: Record failure
+            eventRepository.findFirstByOrderIdAndEventTypeOrderByCreatedAtDesc(
+                            webhookEvent.getOrderId(), EventType.PAYMENT)
+                    .ifPresent(kafkaEvent -> self.recordEventFailure(kafkaEvent, ex.getMessage()));
+            self.recordWebhookFailure(webhookEvent, ex.getMessage());
+            throw ex; // Re-throw to trigger Razorpay retry
         }
 
-        String razorpayOrderId = paymentJson.getString("order_id");
-        String paymentId = paymentJson.getString("id");
 
-        // ✅ Save webhook event
-        WebhookEventEntity webhookEvent = new WebhookEventEntity();
-        webhookEvent.setEventId(eventId);
-        webhookEvent.setEventType(eventType);
-        webhookEvent.setPayload(payload);
-        webhookEvent.setResourceId(razorpayOrderId);
+    }
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void recordEventFailure(EventEntity entity, String error) {
+        log.error("❌ Recording failure for Event ID: {}. Error: {}", entity.getEventId(), error);
 
-        webHookEventRepository.save(webhookEvent);
+        // 1. Update the 'Communication Ledger'
+        entity.setStatus(EventStatus.FAILED);
+        entity.setErrorMessage(error);
 
-        try {
+        // 2. Commit the failure status to the DB
+        eventRepository.save(entity);
 
-            webhookEvent.setStatus(WebhookStatus.PROCESSING);
+        log.info("Failure state successfully persisted for Event {}.", entity.getEventId());
+    }
 
-            PaymentEntity payment = paymentRepository
-                    .findByRazorpayOrderId(razorpayOrderId)
-                    .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_NOT_FOUND));
 
-            if (payment.getStatus() == PaymentStatus.SUCCESS ||
-                    payment.getStatus() == PaymentStatus.FAILED) {
-                webhookEvent.setStatus(WebhookStatus.PROCESSED);
-                return;
-            }
 
-            if ("payment.captured".equals(eventType)) {
-
-                payment.setStatus(PaymentStatus.SUCCESS);
-                payment.setRazorpayPaymentId(paymentId);
-                if (payment.getLastEventId() == null) {
-                    log.error("Missing eventId for order {}", payment.getOrderId());
-                    throw new BusinessException(ErrorCode.INVALID_REQUEST);
-                }
-                producer.sendPaymentStatus(
-                        payment.getLastEventId(),
-                        payment.getOrderId(),
-                        EventStatus.PROCESSED,
-                        "Payment is successfully",
-                        paymentId
-                );
-
-            } else if ("payment.failed".equals(eventType)) {
-
-                payment.setStatus(PaymentStatus.FAILED);
-
-                if (payment.getLastEventId() == null) {
-                    log.error("Missing eventId for order {}", payment.getOrderId());
-                    throw new BusinessException(ErrorCode.INVALID_REQUEST);
-                }
-                producer.sendPaymentStatus(
-                        payment.getLastEventId(),
-                        payment.getOrderId(),
-                        EventStatus.FAILED,
-                        "Payment Failed",
-                        null
-                );
-            }
-
-            paymentRepository.save(payment);
-
-            webhookEvent.setStatus(WebhookStatus.PROCESSED);
-            webhookEvent.setProcessedAt(Instant.now());
-
-        } catch (Exception e) {
-
-            log.error("Webhook processing failed: {}", eventId, e);
-
-            webhookEvent.setStatus(WebhookStatus.FAILED);
-            webhookEvent.setErrorMessage(e.getMessage());
-        }
-
+    // Recorder for Webhook Ledger
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void recordWebhookFailure(WebhookEventEntity webhookEvent, String error) {
+        log.error("❌ Recording failure for WebhookEntity Event ID: {}. Error: {}", webhookEvent.getEventId(), error);
+        webhookEvent.setStatus(WebhookStatus.FAILED);
+        webhookEvent.setErrorMessage(error);
         webHookEventRepository.save(webhookEvent);
     }
 }

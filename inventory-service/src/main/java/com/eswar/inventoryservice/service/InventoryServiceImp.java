@@ -16,6 +16,7 @@ import com.eswar.inventoryservice.repository.IEventRepository;
 import com.eswar.inventoryservice.repository.IInventoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.common.errors.ResourceNotFoundException;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -72,7 +73,7 @@ public class  InventoryServiceImp implements IInventoryService{
 
         for (OrderItem item : event.items()) {
             InventoryEntity inv = inventoryRepository.findById(item.productId())
-                    .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND, item.productId()));
+                    .orElseThrow(() -> new BusinessException(ErrorCode.INVENTORY_NOT_FOUND, item.productId()));
 
             if (inv.getAvailableQuantity() < item.quantity()) {
                 throw new BusinessException(ErrorCode.INSUFFICIENT_STOCK, item.productId());
@@ -134,8 +135,10 @@ public class  InventoryServiceImp implements IInventoryService{
     @Transactional
     public InventoryDto createInventory(InventoryDto dto) {
 
+         if(inventoryRepository.existsById(dto.productId())){
+             throw  new BusinessException(ErrorCode.INVENTORY_ALREADY_EXISTS,dto.productId());
+         }
         InventoryEntity entity = inventoryMapper.toEntity(dto);
-
         InventoryEntity saved = inventoryRepository.save(entity);
 
         return inventoryMapper.toDto(saved);
@@ -147,7 +150,7 @@ public class  InventoryServiceImp implements IInventoryService{
 
         InventoryEntity entity = inventoryRepository
                 .findById(productId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND,productId));
+                .orElseThrow(() -> new BusinessException(ErrorCode.INVENTORY_NOT_FOUND,productId));
 
         return inventoryMapper.toDto(entity);
     }
@@ -170,7 +173,19 @@ public class  InventoryServiceImp implements IInventoryService{
                 page.isLast()
         );
     }
+    @Override
+    @Transactional
+    public InventoryDto updateInventory(UUID productId, InventoryDto dto) {
 
+        InventoryEntity inventory = inventoryRepository.findById(productId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.INVENTORY_NOT_FOUND,productId));
+
+        // Logic: Admin sets the new totals
+        inventoryMapper.updateEntityFromDto(dto,inventory);
+        InventoryEntity savedInventory = inventoryRepository.save(inventory);
+
+        return inventoryMapper.toDto(savedInventory);
+    }
 
 
 }

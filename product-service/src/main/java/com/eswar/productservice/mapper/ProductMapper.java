@@ -1,0 +1,40 @@
+package com.eswar.productservice.mapper;
+
+import com.eswar.productservice.dto.CreateProductRequestDto;
+import com.eswar.productservice.dto.ProductResponseDto;
+import com.eswar.productservice.entity.PictureEntity;
+import com.eswar.productservice.entity.ProductEntity;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
+import org.springframework.beans.factory.annotation.Value;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+@Mapper(componentModel = "spring")
+public abstract class ProductMapper {
+
+    // Spring can now inject this because this is an abstract class, not an interface
+    @Value("${file.storage.base-url:http://localhost:8083/uploads/}")
+    protected String fileBaseUrl;
+
+    public abstract ProductEntity toEntity(CreateProductRequestDto request);
+
+    @Mapping(target = "categoryId", source = "category.id")
+    @Mapping(target = "categoryName", source = "category.name")
+    @Mapping(target = "imageUrls", source = "pictureEntities", qualifiedByName = "mapPicturesToUrls")
+    public abstract ProductResponseDto toResponse(ProductEntity product);
+
+    @Named("mapPicturesToUrls")
+    protected List<String> mapPicturesToUrls(Set<PictureEntity> pictures) {
+        if (pictures == null || pictures.isEmpty()) {
+            return List.of();
+        }
+
+        return pictures.stream()
+                .map(pic -> fileBaseUrl + pic.getStorageKey()) // Attaches the base URL
+                .collect(Collectors.toList());
+    }
+}

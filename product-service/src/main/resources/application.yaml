@@ -13,6 +13,12 @@ spring:
     active: dev
   config:
     import: optional:configserver:http://localhost:8888
+
+file:
+  storage:
+    # Use 8080 if you want traffic to go through your Gateway
+    # Use 8083 if you want the frontend to talk directly to the Product Service
+    base-url: http://localhost:8080/uploads/
 logging:
   level:
     org.springframework.security: DEBUG

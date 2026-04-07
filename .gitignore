@@ -16,3 +16,5 @@ target/
 # IDE
 .idea/
 .vscode/
+
+uploads

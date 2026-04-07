@@ -13,17 +13,17 @@
         <module name="rigister-server" />
         <module name="grpc-contract" />
       </profile>
-      <profile name="Annotation profile for gateway-service" enabled="true">
+      <profile name="Annotation profile for swagger-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
         </processorPath>
-        <module name="gateway-service" />
         <module name="swagger-service" />
+        <module name="gateway-service" />
       </profile>
-      <profile name="Annotation profile for authentication-service" enabled="true">
+      <profile name="Annotation profile for product-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -33,10 +33,10 @@
         </processorPath>
         <module name="product-service" />
         <module name="authentication-service" />
-        <module name="inventory-service" />
-        <module name="order-service" />
         <module name="user-service" />
         <module name="payment-service" />
+        <module name="order-service" />
+        <module name="inventory-service" />
       </profile>
     </annotationProcessing>
   </component>

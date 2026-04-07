@@ -17,6 +17,7 @@ public enum ErrorCode {
     CATEGORY_NOT_FOUND( HttpStatus.NOT_FOUND, "Category not found: "),
     CATEGORY_ALREADY_EXISTS( HttpStatus.NOT_FOUND, "Category already exists: "),
     PRODUCT_ALREADY_EXISTS(HttpStatus.CONFLICT, "Product already exists: "),
+    FILE_CANNOT_SAVED(HttpStatus.CONFLICT,"Could not store the file. Error"),
 
     // service (VERY IMPORTANT for microservices)
     SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "Service temporarily unavailable"),
@@ -28,6 +29,8 @@ public enum ErrorCode {
  MALFORMED_REQUEST(HttpStatus.BAD_REQUEST, "Request body is malformed"),
  MISSING_PARAMETER(HttpStatus.BAD_REQUEST, "Required parameter is missing"),
  TYPE_MISMATCH(HttpStatus.BAD_REQUEST, "Parameter type mismatch"),
+
+
 
  // HTTP method/content errors
  METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "HTTP method not allowed"),

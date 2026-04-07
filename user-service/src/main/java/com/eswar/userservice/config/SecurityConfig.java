@@ -60,7 +60,6 @@ public class SecurityConfig {
                                 // Public product view
                                 .requestMatchers(HttpMethod.POST, "/api/v1/users/**").permitAll()
                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                                .requestMatchers(HttpMethod.GET,"/api/v1/users/**").hasRole("ADMIN")
                                 .anyRequest().authenticated()
                         
 

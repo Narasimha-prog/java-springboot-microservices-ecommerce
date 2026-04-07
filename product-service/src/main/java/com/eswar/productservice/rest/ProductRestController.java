@@ -2,14 +2,18 @@ package com.eswar.productservice.rest;
 
 import com.eswar.productservice.dto.*;
 import com.eswar.productservice.service.IProductService;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStreamReader;
 import java.util.List;
@@ -23,11 +27,14 @@ public class ProductRestController {
 
     private final IProductService service;
 
-    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ProductResponseDto create(
-            @Valid @RequestBody CreateProductRequestDto request) {
-        return service.create(request);
+            @Parameter(content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+            @Valid @RequestPart("product") CreateProductRequestDto request,
+            @RequestPart("files") List<MultipartFile> files) {
+
+        return service.create(request,files);
     }
 
     @GetMapping("/{id}")

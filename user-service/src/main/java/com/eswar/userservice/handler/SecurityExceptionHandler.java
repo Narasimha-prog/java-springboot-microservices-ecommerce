@@ -5,6 +5,7 @@ import com.eswar.userservice.exception.ErrorCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.access.AccessDeniedException;
@@ -17,6 +18,7 @@ import java.io.IOException;
 import java.time.Instant;
 
 @Component
+@Slf4j
 public class SecurityExceptionHandler implements AuthenticationEntryPoint, AccessDeniedHandler {
 
     private final ObjectMapper objectMapper;
@@ -41,6 +43,7 @@ public class SecurityExceptionHandler implements AuthenticationEntryPoint, Acces
     }
 
     private void writeResponse(HttpServletResponse response, ErrorCode errorCode, String detail) throws IOException {
+        log.warn("Error from security filter: {}",errorCode);
         ProblemDetail pd = ProblemDetail.forStatus(errorCode.getStatus());
         pd.setTitle(errorCode.getMessage());
         pd.setDetail(detail);

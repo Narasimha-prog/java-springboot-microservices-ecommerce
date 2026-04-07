@@ -4,7 +4,10 @@ import com.eswar.inventoryservice.exception.BusinessException;
 import com.eswar.inventoryservice.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.TypeMismatchException;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
@@ -16,6 +19,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -59,11 +64,47 @@ public class InventoryRestControllerAdvice {
     }
     private String mapFieldToErrorCode(String field) {
         return switch (field) {
-            case "email" -> ErrorCode.INVALID_REQUEST.name();
-            case "password" -> ErrorCode.INVALID_REQUEST.name();
-            case "firstName", "lastName" -> ErrorCode.INVALID_REQUEST.name();
+            case "productId" -> ErrorCode.INVALID_REQUEST.name();
+            case "availableQuantity" -> ErrorCode.INVALID_REQUEST.name();
+            case "reservedQuantity" -> ErrorCode.INVALID_REQUEST.name();
             default -> ErrorCode.VALIDATION_FAILED.name();
         };
+    }
+    //-----DATA BASE
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ProblemDetail handleDBExceptions(@NonNull DataIntegrityViolationException ex) {
+        log.warn(" exception occurred from handleDBExceptions", ex);
+        Throwable root = ex.getRootCause();
+        ProblemDetail pd;
+
+        if (root != null) {
+            String message = root.getMessage();
+
+            // List to hold all duplicate fields
+            List<String> duplicateFields = new ArrayList<>();
+
+            // Check which unique constraints are violated dynamically
+            if (message.contains("productId")) duplicateFields.add("productId");
+            if (message.contains("eventId")) duplicateFields.add("eventId");
+
+            if (!duplicateFields.isEmpty()) {
+                pd = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+                pd.setTitle("Duplicate Fields");
+                pd.setDetail("The following fields already exist: " + String.join(", ", duplicateFields));
+                pd.setProperty("fields", duplicateFields);
+                pd.setProperty("errorCode", "DUPLICATE_FIELDS");
+                pd.setProperty("timestamp", Instant.now());
+                return pd;
+            }
+        }
+
+        // Fallback for other DB errors
+        pd = ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+        pd.setTitle("Database Error");
+        pd.setDetail(root != null ? root.getMessage() : ex.getMessage());
+        pd.setProperty("timestamp", Instant.now());
+        pd.setProperty("errorCode", "DB_ERROR");
+        return pd;
     }
     // ------------------ HTTP EXCEPTIONS ------------------
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)

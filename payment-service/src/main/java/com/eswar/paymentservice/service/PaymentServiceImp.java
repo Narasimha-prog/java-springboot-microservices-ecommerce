@@ -206,6 +206,7 @@ public class PaymentServiceImp implements IPaymentService {
     @Transactional
     //to get order id for frontend
     public PaymentCreateResponse createPayment(UUID orderId, Principal principal) throws RazorpayException {
+        //validate UUID basic
         validator.validateCreatePayment(orderId);
         //find payment entity after created by order event
         PaymentEntity payment = paymentRepository.findByOrderId(orderId)

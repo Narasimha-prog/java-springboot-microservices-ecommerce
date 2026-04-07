@@ -15,8 +15,9 @@ public enum ErrorCode {
     SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "Service temporarily unavailable"),
     DOWNSTREAM_SERVICE_ERROR(HttpStatus.BAD_GATEWAY, "Error from downstream service"),
     TIMEOUT(HttpStatus.GATEWAY_TIMEOUT, "Request timeout"),
-    PRODUCT_NOT_FOUND( HttpStatus.NOT_FOUND, "Product not found: "),
+    INVENTORY_NOT_FOUND( HttpStatus.NOT_FOUND, "Inventory not found: "),
     INSUFFICIENT_STOCK(HttpStatus.BAD_REQUEST,"Insufficient Stock"),
+    INVENTORY_ALREADY_EXISTS( HttpStatus.NOT_FOUND, "inventory already exists: "),
 
     // validation
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "Invalid request"),

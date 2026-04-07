@@ -36,6 +36,7 @@ public class SecurityConfig {
     };
 
 
+
     @Bean
     public SecurityFilterChain securityFilterChain(@NonNull HttpSecurity httpSecurity){
 
@@ -54,6 +55,7 @@ public class SecurityConfig {
                                 .requestMatchers(
                                         ACTUATOR_WHITELIST
                                 ).permitAll()
+                                .requestMatchers("/uploads/**").permitAll()
                                 // Public product view
                                 .requestMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll()
                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()

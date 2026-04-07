@@ -13,5 +13,6 @@ public interface IInventoryService {
     InventoryDto createInventory(InventoryDto dto);
     InventoryDto getInventory(UUID productId);
     PageResponse<InventoryDto> getAllInventories(Pageable pageable);
+    InventoryDto updateInventory(UUID productId, InventoryDto dto);
 
 }

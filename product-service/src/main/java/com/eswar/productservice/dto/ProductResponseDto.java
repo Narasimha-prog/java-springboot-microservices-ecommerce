@@ -16,7 +16,7 @@ public record ProductResponseDto(
         String brand,          // New
         String description,
         BigDecimal price,
-        ProductSize size,
+        ProductSize productSize,
         ProductColor productColor,
         Boolean featured,      // New
         ProductStatus status,

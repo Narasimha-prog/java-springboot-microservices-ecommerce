@@ -19,11 +19,24 @@
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
         </processorPath>
         <module name="swagger-service" />
         <module name="gateway-service" />
       </profile>
-      <profile name="Annotation profile for product-service" enabled="true">
+      <profile name="Annotation profile for promotion-service" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.44/lombok-1.18.44.jar" />
+        </processorPath>
+        <module name="cart-service" />
+        <module name="review-service" />
+        <module name="notification-service" />
+        <module name="promotion-service" />
+      </profile>
+      <profile name="Annotation profile for authentication-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -33,9 +46,9 @@
         </processorPath>
         <module name="product-service" />
         <module name="authentication-service" />
+        <module name="order-service" />
         <module name="user-service" />
         <module name="payment-service" />
-        <module name="order-service" />
         <module name="inventory-service" />
       </profile>
     </annotationProcessing>
@@ -44,13 +57,17 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="admin-server" options="-parameters" />
       <module name="authentication-service" options="-parameters" />
+      <module name="cart-service" options="-parameters" />
       <module name="config-server" options="-parameters" />
       <module name="gateway-service" options="-parameters" />
       <module name="inventory-service" options="-parameters" />
+      <module name="notification-service" options="-parameters" />
       <module name="order-service" options="-parameters" />
       <module name="payment-service" options="-parameters" />
       <module name="product-service" options="-parameters" />
+      <module name="promotion-service" options="-parameters" />
       <module name="register-server" options="-parameters" />
+      <module name="review-service" options="-parameters" />
       <module name="swagger-service" options="-parameters" />
       <module name="user-service" options="-parameters" />
     </option>

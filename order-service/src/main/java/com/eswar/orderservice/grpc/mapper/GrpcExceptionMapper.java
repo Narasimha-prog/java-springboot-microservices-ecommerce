@@ -20,7 +20,7 @@ public class GrpcExceptionMapper {
                     new BusinessException(ErrorCode.PRODUCT_NOT_FOUND);
 
             case UNAVAILABLE ->
-                    new BusinessException(ErrorCode.SERVICE_UNAVAILABLE);
+                    new BusinessException(ErrorCode.PRODUCT_SERVICE_UNAVAILABLE);
 
             case DEADLINE_EXCEEDED ->
                     new BusinessException(ErrorCode.TIMEOUT);

@@ -16,15 +16,18 @@ import java.util.stream.Collectors;
 @Mapper(componentModel = "spring")
 public abstract class ProductMapper {
 
-    // Spring can now inject this because this is an abstract class, not an interface
+
     @Value("${file.storage.base-url:http://localhost:8083/uploads/}")
     protected String fileBaseUrl;
+
 
     public abstract ProductEntity toEntity(CreateProductRequestDto request);
 
     @Mapping(target = "categoryId", source = "category.id")
     @Mapping(target = "categoryName", source = "category.name")
     @Mapping(target = "imageUrls", source = "pictureEntities", qualifiedByName = "mapPicturesToUrls")
+    @Mapping(target ="productSize" ,source = "productSize")
+    @Mapping(target = "productColor",source = "productColor")
     public abstract ProductResponseDto toResponse(ProductEntity product);
 
     @Named("mapPicturesToUrls")

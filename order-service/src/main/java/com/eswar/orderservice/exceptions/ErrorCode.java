@@ -19,7 +19,7 @@ public enum ErrorCode {
 
  // ================= PRODUCT / DOWNSTREAM =================
  PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "Product not found"),
- PRODUCT_SERVICE_FAILED(HttpStatus.BAD_GATEWAY, "Product service unavailable"),
+ PRODUCT_SERVICE_UNAVAILABLE(HttpStatus.BAD_GATEWAY, "Product service unavailable"),
 
  // ================= AUTH =================
  TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "Token expired"),

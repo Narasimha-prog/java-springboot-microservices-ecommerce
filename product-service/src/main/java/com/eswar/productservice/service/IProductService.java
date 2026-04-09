@@ -22,4 +22,10 @@ public interface IProductService {
     ProductResponseDto update(UUID id, UpdateProductRequestDto request);
 
     void delete(UUID id);
+
+    PageResponse<ProductResponseDto> getFeatured(Pageable pageable);
+
+    PageResponse<ProductResponseDto> getRelated(Pageable pageable, UUID id);
+
+    PageResponse<ProductResponseDto> filter(Pageable pageable, UUID categoryId, List<String> productSizes);
 }

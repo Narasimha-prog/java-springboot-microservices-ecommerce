@@ -25,6 +25,7 @@ import com.eswar.orderservice.mapper.IOrderMapper;
 import com.eswar.orderservice.repository.IEventRepository;
 import com.eswar.orderservice.repository.IOrderRepository;
 import com.eswar.orderservice.service.IOrderService;
+import com.eswar.orderservice.util.PagedUtils;
 import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,9 +49,9 @@ public class OrderServiceImp implements IOrderService {
 
     private final IOrderRepository orderRepository;
     private final IEventRepository eventRepository;
-    private final IOrderMapper mapper;
+    private  final IOrderMapper mapper;
      private final OrderKafkaService orderKafkaService;
-    private final GrpcProductServiceClient grpcProductServiceClient;
+    private  final GrpcProductServiceClient grpcProductServiceClient;
 
     @Autowired
     @Lazy
@@ -182,17 +183,7 @@ public class OrderServiceImp implements IOrderService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<OrderResponseDto> getALlOrders(Pageable pageable) {
-
-        Page<OrderEntity> page = orderRepository.findAll(pageable);
-
-        return new PageResponse<>(
-                page.getContent().stream().map(mapper::toResponse).toList(),
-                page.getNumber(),
-                page.getSize(),
-                page.getTotalElements(),
-                page.getTotalPages(),
-                page.isLast()
-        );
+        return PagedUtils.toPageResponse(orderRepository.findAll(pageable),mapper::toResponse);
     }
 
     @Override
@@ -296,17 +287,7 @@ public class OrderServiceImp implements IOrderService {
     public PageResponse<OrderResponseDto> getOrdersByCustomerId(String customerId, Pageable pageable) {
 
         UUID id = parseUUID(customerId, ErrorCode.INVALID_USER_ID);
-
-        Page<OrderEntity> page = orderRepository.findByCustomerId(id, pageable);
-
-        return new PageResponse<>(
-                page.getContent().stream().map(mapper::toResponse).toList(),
-                page.getNumber(),
-                page.getSize(),
-                page.getTotalElements(),
-                page.getTotalPages(),
-                page.isLast()
-        );
+        return PagedUtils.toPageResponse(orderRepository.findByCustomerId(id,pageable),mapper::toResponse);
     }
 
     // ================= EVENT HANDLING =================

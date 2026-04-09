@@ -1,5 +1,6 @@
 package com.eswar.productservice.dto;
 
+import com.eswar.productservice.constatnts.ProductColor;
 import com.eswar.productservice.constatnts.ProductSize;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
@@ -22,7 +23,11 @@ public record CreateProductRequestDto(
         @NotBlank(message = "Brand is required") // Don't forget brand!
         String brand,
 
+        @NotBlank(message = "size is required")
         ProductSize productSize,
+
+        @NotBlank(message = "color is required")
+        ProductColor productColor,
 
         @Size(max = 1000)
         String description,

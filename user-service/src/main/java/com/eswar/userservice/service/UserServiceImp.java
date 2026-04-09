@@ -43,6 +43,9 @@ public class UserServiceImp implements IUserService {
 
         userValidator.validateCreateUser(request);
 
+        if(userRepository.existsByEmail(request.email())){
+            throw new BusinessException(ErrorCode.USER_ALREADY_EXISTS,request.email());
+        }
         UserEntity entity = userMapper.toEntity(request);
 
 

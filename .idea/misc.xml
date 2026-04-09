@@ -18,6 +18,10 @@
         <option value="$PROJECT_DIR$/grpc-contract/pom.xml" />
         <option value="$PROJECT_DIR$/swagger-service/pom.xml" />
         <option value="$PROJECT_DIR$/inventory-service/pom.xml" />
+        <option value="$PROJECT_DIR$/cart-service/pom.xml" />
+        <option value="$PROJECT_DIR$/notification-service/pom.xml" />
+        <option value="$PROJECT_DIR$/review-service/pom.xml" />
+        <option value="$PROJECT_DIR$/promotion-service/pom.xml" />
       </list>
     </option>
     <option name="ignoredFiles">

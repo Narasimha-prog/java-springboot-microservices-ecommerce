@@ -6,6 +6,7 @@ import com.eswar.productservice.entity.*;
 import com.eswar.productservice.exception.*;
 import com.eswar.productservice.mapper.ProductMapper;
 import com.eswar.productservice.repository.*;
+import com.eswar.productservice.util.PagedUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -83,7 +84,7 @@ public class ProductServiceImpl implements IProductService {
     @Override
     @Transactional(readOnly = true)
     public ProductResponseDto getById(UUID id) {
-//fetch all
+
         ProductEntity product = productRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND,id));
 
@@ -93,24 +94,9 @@ public class ProductServiceImpl implements IProductService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<ProductResponseDto> getAll(Pageable pageable) {
+     Page<ProductEntity> entityPage=productRepository.findAll(pageable);
 
-
-        Page<ProductEntity> page=productRepository.findAll(pageable);
-
-        List<ProductResponseDto> content=page.getContent().stream().map(
-                mapper::toResponse
-        ).toList();
-
-
-
-        return new PageResponse<>(
-                content,
-                page.getNumber(),
-                page.getSize(),
-                page.getTotalElements(),
-                page.getTotalPages(),
-                page.isLast()
-        );
+        return PagedUtils.toPageResponse(entityPage,mapper::toResponse);
     }
 
     @Override
@@ -138,4 +124,25 @@ public class ProductServiceImpl implements IProductService {
 
         productRepository.deleteById(id);
     }
+
+    @Override
+    public PageResponse<ProductResponseDto> getFeatured(Pageable pageable) {
+        Page<ProductEntity> entityPage=productRepository.findByFeaturedTrue(pageable);
+
+        return PagedUtils.toPageResponse(entityPage,mapper::toResponse);
+    }
+
+    @Override
+    public PageResponse<ProductResponseDto> getRelated(Pageable pageable, UUID id) {
+        Page<ProductEntity> entityPage=productRepository.findByCategoryId(id,pageable);
+        return PagedUtils.toPageResponse(entityPage,mapper::toResponse);
+    }
+
+    @Override
+    public PageResponse<ProductResponseDto> filter(Pageable pageable, UUID categoryId, List<String> productSizes) {
+        Page<ProductEntity> entityPage=productRepository.findByCategoryIdAndProductSizeIn(categoryId,productSizes,pageable);
+        return PagedUtils.toPageResponse(entityPage,mapper::toResponse);
+    }
+
+
 }

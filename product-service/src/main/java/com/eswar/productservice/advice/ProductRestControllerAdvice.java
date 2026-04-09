@@ -62,9 +62,9 @@ public class ProductRestControllerAdvice {
     }
     private String mapFieldToErrorCode(String field) {
         return switch (field) {
-            case "email" -> ErrorCode.INVALID_REQUEST.name();
-            case "password" -> ErrorCode.INVALID_REQUEST.name();
-            case "phoneNumber" -> ErrorCode.USER_ALREADY_EXISTS.name();
+            case "name" -> ErrorCode.INVALID_REQUEST.name();
+            case "description" -> ErrorCode.INVALID_REQUEST.name();
+            case "phoneNumber" -> ErrorCode.INVALID_REQUEST.name();
             case "firstName", "lastName" -> ErrorCode.INVALID_REQUEST.name();
             default -> ErrorCode.VALIDATION_FAILED.name();
         };

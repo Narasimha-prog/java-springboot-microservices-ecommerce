@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.eswar.grpc.cart";
+option java_outer_classname = "CartProto";
+
+package cart;
+
+service CartService {
+  rpc GetCartDetails (CartRequest) returns (CartResponse);
+}
+
+message CartRequest {
+  string user_id = 1;
+}
+
+message CartItem {
+  string product_id = 1;
+  string name = 2;
+  string image_url = 3;
+  int32 quantity = 4;
+
+  // Base price per unit
+  string unit_price = 5;
+
+  // The value after (unit_price * quantity) - discounts
+  string sub_total = 6;
+
+  // Optional: To show the user how much they saved in the order history
+  string discount_amount = 7;
+}
+
+message CartResponse {
+  string user_id = 1;
+  repeated CartItem items = 2;
+  string total_amount = 3; // Final amount to be charged
+  string currency = 4;
+}

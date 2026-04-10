@@ -12,7 +12,7 @@ import com.eswar.orderservice.entity.OrderedItemEntity;
 import com.eswar.orderservice.entity.OrderedItemId;
 import com.eswar.orderservice.exceptions.BusinessException;
 import com.eswar.orderservice.exceptions.ErrorCode;
-import com.eswar.orderservice.grpc.client.GrpcProductServiceClient;
+import com.eswar.orderservice.grpc.client.ProductServiceClient;
 import com.eswar.orderservice.grpc.mapper.GrpcExceptionMapper;
 import com.eswar.orderservice.kafka.constatnts.EventStatus;
 import com.eswar.orderservice.kafka.constatnts.EventType;
@@ -51,7 +51,7 @@ public class OrderServiceImp implements IOrderService {
     private final IEventRepository eventRepository;
     private  final IOrderMapper mapper;
      private final OrderKafkaService orderKafkaService;
-    private  final GrpcProductServiceClient grpcProductServiceClient;
+    private  final ProductServiceClient grpcProductServiceClient;
 
     @Autowired
     @Lazy

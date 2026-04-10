@@ -1,5 +1,6 @@
 package com.eswar.productservice.rest;
 
+import com.eswar.productservice.constatnts.ProductSize;
 import com.eswar.productservice.dto.*;
 import com.eswar.productservice.service.IProductService;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -87,7 +88,7 @@ public class ProductRestController {
     public ResponseEntity<PageResponse<ProductResponseDto>> filter(
             @ParameterObject Pageable pageable,
             @RequestParam("categoryId") UUID categoryId,
-            @RequestParam(value = "productSizes", required = false) List<String> productSizes) {
+            @RequestParam(value = "productSizes", required = false) List<ProductSize> productSizes) {
 
         // If you use a QueryBuilder like the template, it would be initialized here
         PageResponse<ProductResponseDto> filteredProducts = service.filter(pageable, categoryId, productSizes);

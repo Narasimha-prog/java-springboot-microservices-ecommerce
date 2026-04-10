@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @Service
 @Slf4j
-public class GrpcProductServiceClient {
+public class ProductServiceClient {
 
 
     @GrpcClient("product-service")

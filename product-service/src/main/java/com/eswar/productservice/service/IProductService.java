@@ -1,5 +1,6 @@
 package com.eswar.productservice.service;
 
+import com.eswar.productservice.constatnts.ProductSize;
 import com.eswar.productservice.dto.CreateProductRequestDto;
 import com.eswar.productservice.dto.PageResponse;
 import com.eswar.productservice.dto.ProductResponseDto;
@@ -27,5 +28,5 @@ public interface IProductService {
 
     PageResponse<ProductResponseDto> getRelated(Pageable pageable, UUID id);
 
-    PageResponse<ProductResponseDto> filter(Pageable pageable, UUID categoryId, List<String> productSizes);
+    PageResponse<ProductResponseDto> filter(Pageable pageable, UUID categoryId, List<ProductSize> productSizes);
 }

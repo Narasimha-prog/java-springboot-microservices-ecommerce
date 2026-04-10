@@ -1,5 +1,6 @@
 package com.eswar.productservice.service;
 
+import com.eswar.productservice.constatnts.ProductSize;
 import com.eswar.productservice.constatnts.ProductStatus;
 import com.eswar.productservice.dto.*;
 import com.eswar.productservice.entity.*;
@@ -139,7 +140,7 @@ public class ProductServiceImpl implements IProductService {
     }
 
     @Override
-    public PageResponse<ProductResponseDto> filter(Pageable pageable, UUID categoryId, List<String> productSizes) {
+    public PageResponse<ProductResponseDto> filter(Pageable pageable, UUID categoryId, List<ProductSize> productSizes) {
         Page<ProductEntity> entityPage=productRepository.findByCategoryIdAndProductSizeIn(categoryId,productSizes,pageable);
         return PagedUtils.toPageResponse(entityPage,mapper::toResponse);
     }

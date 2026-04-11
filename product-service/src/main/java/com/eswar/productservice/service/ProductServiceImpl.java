@@ -8,6 +8,7 @@ import com.eswar.productservice.exception.*;
 import com.eswar.productservice.mapper.ProductMapper;
 import com.eswar.productservice.repository.*;
 import com.eswar.productservice.util.PagedUtils;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -100,19 +101,7 @@ public class ProductServiceImpl implements IProductService {
         return PagedUtils.toPageResponse(entityPage,mapper::toResponse);
     }
 
-    @Override
-    @Transactional
-    public ProductResponseDto update(UUID id, UpdateProductRequestDto request) {
-        //fetch
-        ProductEntity product = productRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND,id));
 
-        product.setName(request.name());
-        product.setDescription(request.description());
-        product.setPrice(request.price());
-
-        return mapper.toResponse(productRepository.save(product));
-    }
 
     @Override
     @Transactional
@@ -135,14 +124,44 @@ public class ProductServiceImpl implements IProductService {
 
     @Override
     public PageResponse<ProductResponseDto> getRelated(Pageable pageable, UUID id) {
-        Page<ProductEntity> entityPage=productRepository.findByCategoryId(id,pageable);
-        return PagedUtils.toPageResponse(entityPage,mapper::toResponse);
+        // 1. Find the current product to identify its category
+        ProductEntity currentProduct = productRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND,id));
+
+        // 2. Fetch others in that category, excluding this one
+        Page<ProductEntity> relatedPage = productRepository.findByCategoryIdAndIdNot(
+                currentProduct.getCategory().getId(),
+                id,
+                pageable
+        );
+        return PagedUtils.toPageResponse(relatedPage,mapper::toResponse);
     }
 
     @Override
     public PageResponse<ProductResponseDto> filter(Pageable pageable, UUID categoryId, List<ProductSize> productSizes) {
         Page<ProductEntity> entityPage=productRepository.findByCategoryIdAndProductSizeIn(categoryId,productSizes,pageable);
         return PagedUtils.toPageResponse(entityPage,mapper::toResponse);
+    }
+
+    @Transactional
+    public ProductResponseDto update(UUID id, UpdateProductRequestDto request) {
+        // 1. Fetch
+        ProductEntity product = productRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND,id));
+
+
+        // 2. Map Update (Updates name, description, price, color, size, brand)
+        mapper.updateEntityFromDto(request, product);
+
+        // 3. Handle Category separately (since it's a UUID -> Entity relation)
+        if (!product.getCategory().getId().equals(request.categoryId())) {
+            CategoryEntity category = categoryRepository.findById(request.categoryId())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND,request.categoryId()));
+            product.setCategory(category);
+        }
+
+        // 4. Save and return
+        return mapper.toResponse(productRepository.save(product));
     }
 
 

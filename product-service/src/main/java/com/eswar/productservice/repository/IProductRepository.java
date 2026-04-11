@@ -5,6 +5,8 @@ import com.eswar.productservice.entity.ProductEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.UUID;
@@ -17,8 +19,16 @@ public interface IProductRepository extends JpaRepository<ProductEntity, UUID> {
 
     Page<ProductEntity> findByCategoryId(UUID categoryId, Pageable pageable);
 
-    // Finds products in the same category but excludes the current product
-    Page<ProductEntity> findByCategoryIdAndIdNot(UUID categoryId, UUID productId, Pageable pageable);
+    @Query("""
+    SELECT p FROM ProductEntity p 
+    WHERE p.category.id = :categoryId 
+    AND p.id <> :productId
+""")
+    Page<ProductEntity> findByCategoryIdAndIdNot(
+            @Param("categoryId") UUID categoryId,
+            @Param("productId") UUID productId,
+            Pageable pageable
+    );
 
     // Finds products by category and a list of sizes
     Page<ProductEntity> findByCategoryIdAndProductSizeIn(UUID categoryId, List<ProductSize> sizes, Pageable pageable);

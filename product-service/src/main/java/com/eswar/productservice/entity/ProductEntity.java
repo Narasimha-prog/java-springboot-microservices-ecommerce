@@ -50,8 +50,7 @@ public class ProductEntity extends BaseEntity {
 
 
     @ToString.Include
-    @Enumerated(EnumType.STRING)
-    private ProductColor productColor;
+    private String productColor;
 
     @Column(nullable = false) // Added featured
     @ToString.Include

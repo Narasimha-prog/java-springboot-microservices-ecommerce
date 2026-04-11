@@ -24,7 +24,7 @@ public class CartItemEntity {
     private UUID id;
 
     @ToString.Include
-    private String productId;
+    private UUID productId;
 
     @ToString.Include
     private Integer quantity;

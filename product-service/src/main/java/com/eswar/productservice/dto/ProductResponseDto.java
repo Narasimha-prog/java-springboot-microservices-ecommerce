@@ -17,7 +17,7 @@ public record ProductResponseDto(
         String description,
         BigDecimal price,
         ProductSize productSize,
-        ProductColor productColor,
+        String productColor,
         Boolean featured,      // New
         ProductStatus status,
         UUID categoryId,

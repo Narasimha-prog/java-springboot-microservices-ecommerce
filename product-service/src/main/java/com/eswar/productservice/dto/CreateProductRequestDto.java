@@ -3,10 +3,7 @@ package com.eswar.productservice.dto;
 import com.eswar.productservice.constatnts.ProductColor;
 import com.eswar.productservice.constatnts.ProductSize;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -23,11 +20,11 @@ public record CreateProductRequestDto(
         @NotBlank(message = "Brand is required") // Don't forget brand!
         String brand,
 
-        @NotBlank(message = "size is required")
+        @NotNull(message = "size is required")
         ProductSize productSize,
 
-        @NotBlank(message = "color is required")
-        ProductColor productColor,
+        @Pattern(regexp = "^#([A-Fa-f0-9]{6})$", message = "Please provide a valid 6-digit hex color starting with #")
+        String productColor,
 
         @Size(max = 1000)
         String description,

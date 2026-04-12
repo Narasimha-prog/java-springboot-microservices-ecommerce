@@ -11,6 +11,7 @@ import org.mapstruct.Mapping;
 
 import java.math.BigDecimal;
 import java.util.Set;
+import java.util.UUID;
 
 @Mapper(componentModel = "spring")
 public interface ICartMapper {
@@ -31,7 +32,7 @@ public interface ICartMapper {
      */
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "cart", ignore = true)
-    @Mapping(target = "productId", source = "request.productId")
-    @Mapping(target = "quantity", source = "request.quantity")
+    @Mapping(target = "productId", source = "productId")
+    @Mapping(target = "quantity", source = "quantity")
     CartItemEntity toEntity(CartItemRequest request);
 }

@@ -16,7 +16,9 @@ public class CorsGlobalConfig {
         config.addAllowedOrigin("http://10.105.105.219:7777");
         config.addAllowedOrigin("http://10.105.105.219:8080");
         config.addAllowedOrigin("http://localhost:4200");
+        config.addAllowedOrigin("http://10.137.236.219:7777");
         config.addAllowedOrigin("http://10.137.236.219:8080");
+        config.addAllowedOrigin("https://2968-2409-40f0-9-315-94d8-3c53-c0a0-a3dc.ngrok-free.app");
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         config.setAllowCredentials(true);

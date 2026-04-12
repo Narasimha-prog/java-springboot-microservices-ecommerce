@@ -2,6 +2,8 @@ package com.lnreddy.cart_service.service;
 
 import com.lnreddy.cart_service.dto.*;
 import com.lnreddy.cart_service.entity.*;
+import com.lnreddy.cart_service.exceptions.BusinessException;
+import com.lnreddy.cart_service.exceptions.ErrorCode;
 import com.lnreddy.cart_service.mapper.ICartMapper;
 import com.lnreddy.cart_service.repository.ICartRepository;
 import com.lnreddy.cart_service.grpc.client.ProductClient;
@@ -92,8 +94,24 @@ public class CartServiceImpl implements ICartService {
     }
 
     @Override
+    @Transactional
     public CartResponseDTO removeItemFromCart(String userId, String productId) {
-        // Implementation for removing a single item logic
-        return null;
+        // 1. Fetch the cart
+        CartEntity cart = cartRepository.findByUserId(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND, userId));
+
+        // 2. Remove the item from the collection
+        // The orphanRemoval = true in your Entity will trigger the DELETE in SQL
+        boolean removed = cart.getItems().removeIf(item -> item.getProductId().equals(productId));
+
+        if (!removed) {
+            throw new BusinessException(ErrorCode.PRODUCT_NOT_FOUND, userId);
+        }
+
+        // 3. Save the parent (Syncs the state)
+        cartRepository.save(cart);
+
+        // 4. Return the updated, enriched cart
+        return getCartByUserId(userId);
     }
 }

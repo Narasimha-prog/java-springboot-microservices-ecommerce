@@ -37,4 +37,16 @@ public interface ProductResponseOrBuilder extends
    * @return The price.
    */
   double getPrice();
+
+  /**
+   * <code>string imageUrl = 4;</code>
+   * @return The imageUrl.
+   */
+  java.lang.String getImageUrl();
+  /**
+   * <code>string imageUrl = 4;</code>
+   * @return The bytes for imageUrl.
+   */
+  com.google.protobuf.ByteString
+      getImageUrlBytes();
 }

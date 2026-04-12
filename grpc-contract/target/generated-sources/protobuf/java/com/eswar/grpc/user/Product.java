@@ -35,11 +35,11 @@ public final class Product {
   static {
     java.lang.String[] descriptorData = {
       "\n\rProduct.proto\"#\n\016ProductRequest\022\021\n\tpro" +
-      "ductId\030\001 \001(\t\"A\n\017ProductResponse\022\021\n\tprodu" +
-      "ctId\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022\r\n\005price\030\003 \001(\0012" +
-      "A\n\016ProductService\022/\n\nGetProduct\022\017.Produc" +
-      "tRequest\032\020.ProductResponseB\027\n\023com.eswar." +
-      "grpc.userP\001b\006proto3"
+      "ductId\030\001 \001(\t\"S\n\017ProductResponse\022\021\n\tprodu" +
+      "ctId\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022\r\n\005price\030\003 \001(\001\022" +
+      "\020\n\010imageUrl\030\004 \001(\t2A\n\016ProductService\022/\n\nG" +
+      "etProduct\022\017.ProductRequest\032\020.ProductResp" +
+      "onseB\027\n\023com.eswar.grpc.userP\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -56,7 +56,7 @@ public final class Product {
     internal_static_ProductResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_ProductResponse_descriptor,
-        new java.lang.String[] { "ProductId", "Name", "Price", });
+        new java.lang.String[] { "ProductId", "Name", "Price", "ImageUrl", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

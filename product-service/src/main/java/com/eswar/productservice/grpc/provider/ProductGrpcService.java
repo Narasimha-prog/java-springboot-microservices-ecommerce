@@ -29,6 +29,7 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
             com.eswar.grpc.user.ProductResponse response =
                     com.eswar.grpc.user.ProductResponse.newBuilder()
                             .setProductId(product.id().toString())
+                            .setImageUrl(product.imageUrls().getFirst())
                             .setName(product.name())
                             .setPrice(product.price().doubleValue())
                             .build();

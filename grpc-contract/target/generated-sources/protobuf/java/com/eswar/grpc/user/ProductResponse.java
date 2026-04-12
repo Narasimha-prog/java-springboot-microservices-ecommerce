@@ -19,6 +19,7 @@ private static final long serialVersionUID = 0L;
   private ProductResponse() {
     productId_ = "";
     name_ = "";
+    imageUrl_ = "";
   }
 
   @java.lang.Override
@@ -130,6 +131,45 @@ private static final long serialVersionUID = 0L;
     return price_;
   }
 
+  public static final int IMAGEURL_FIELD_NUMBER = 4;
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object imageUrl_ = "";
+  /**
+   * <code>string imageUrl = 4;</code>
+   * @return The imageUrl.
+   */
+  @java.lang.Override
+  public java.lang.String getImageUrl() {
+    java.lang.Object ref = imageUrl_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      imageUrl_ = s;
+      return s;
+    }
+  }
+  /**
+   * <code>string imageUrl = 4;</code>
+   * @return The bytes for imageUrl.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString
+      getImageUrlBytes() {
+    java.lang.Object ref = imageUrl_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      imageUrl_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -153,6 +193,9 @@ private static final long serialVersionUID = 0L;
     if (java.lang.Double.doubleToRawLongBits(price_) != 0) {
       output.writeDouble(3, price_);
     }
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(imageUrl_)) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 4, imageUrl_);
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -171,6 +214,9 @@ private static final long serialVersionUID = 0L;
     if (java.lang.Double.doubleToRawLongBits(price_) != 0) {
       size += com.google.protobuf.CodedOutputStream
         .computeDoubleSize(3, price_);
+    }
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(imageUrl_)) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, imageUrl_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -194,6 +240,8 @@ private static final long serialVersionUID = 0L;
     if (java.lang.Double.doubleToLongBits(getPrice())
         != java.lang.Double.doubleToLongBits(
             other.getPrice())) return false;
+    if (!getImageUrl()
+        .equals(other.getImageUrl())) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -212,6 +260,8 @@ private static final long serialVersionUID = 0L;
     hash = (37 * hash) + PRICE_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
         java.lang.Double.doubleToLongBits(getPrice()));
+    hash = (37 * hash) + IMAGEURL_FIELD_NUMBER;
+    hash = (53 * hash) + getImageUrl().hashCode();
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -346,6 +396,7 @@ private static final long serialVersionUID = 0L;
       productId_ = "";
       name_ = "";
       price_ = 0D;
+      imageUrl_ = "";
       return this;
     }
 
@@ -387,6 +438,9 @@ private static final long serialVersionUID = 0L;
       }
       if (((from_bitField0_ & 0x00000004) != 0)) {
         result.price_ = price_;
+      }
+      if (((from_bitField0_ & 0x00000008) != 0)) {
+        result.imageUrl_ = imageUrl_;
       }
     }
 
@@ -447,6 +501,11 @@ private static final long serialVersionUID = 0L;
       if (other.getPrice() != 0D) {
         setPrice(other.getPrice());
       }
+      if (!other.getImageUrl().isEmpty()) {
+        imageUrl_ = other.imageUrl_;
+        bitField0_ |= 0x00000008;
+        onChanged();
+      }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
@@ -488,6 +547,11 @@ private static final long serialVersionUID = 0L;
               bitField0_ |= 0x00000004;
               break;
             } // case 25
+            case 34: {
+              imageUrl_ = input.readStringRequireUtf8();
+              bitField0_ |= 0x00000008;
+              break;
+            } // case 34
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -677,6 +741,78 @@ private static final long serialVersionUID = 0L;
     public Builder clearPrice() {
       bitField0_ = (bitField0_ & ~0x00000004);
       price_ = 0D;
+      onChanged();
+      return this;
+    }
+
+    private java.lang.Object imageUrl_ = "";
+    /**
+     * <code>string imageUrl = 4;</code>
+     * @return The imageUrl.
+     */
+    public java.lang.String getImageUrl() {
+      java.lang.Object ref = imageUrl_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        imageUrl_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     * <code>string imageUrl = 4;</code>
+     * @return The bytes for imageUrl.
+     */
+    public com.google.protobuf.ByteString
+        getImageUrlBytes() {
+      java.lang.Object ref = imageUrl_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        imageUrl_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <code>string imageUrl = 4;</code>
+     * @param value The imageUrl to set.
+     * @return This builder for chaining.
+     */
+    public Builder setImageUrl(
+        java.lang.String value) {
+      if (value == null) { throw new NullPointerException(); }
+      imageUrl_ = value;
+      bitField0_ |= 0x00000008;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>string imageUrl = 4;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearImageUrl() {
+      imageUrl_ = getDefaultInstance().getImageUrl();
+      bitField0_ = (bitField0_ & ~0x00000008);
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>string imageUrl = 4;</code>
+     * @param value The bytes for imageUrl to set.
+     * @return This builder for chaining.
+     */
+    public Builder setImageUrlBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) { throw new NullPointerException(); }
+      checkByteStringIsUtf8(value);
+      imageUrl_ = value;
+      bitField0_ |= 0x00000008;
       onChanged();
       return this;
     }

@@ -28,7 +28,6 @@ public class InventoryRestController {
     }
 
     @GetMapping("/{productId}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<InventoryDto> getInventory(@PathVariable UUID productId) {
         return ResponseEntity.ok(inventoryService.getInventory(productId));
     }

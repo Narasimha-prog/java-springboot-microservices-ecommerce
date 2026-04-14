@@ -1,6 +1,8 @@
 package com.eswar.inventoryservice.config;
 
 import com.eswar.inventoryservice.filter.HeaderAuthenticationFilter;
+import com.eswar.inventoryservice.handler.SecurityExceptionHandler;
+import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +18,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     private static final String[] SWAGGER_WHITELIST = {
@@ -29,6 +32,8 @@ public class SecurityConfig {
             "/actuator/health",
             "/actuator/info"
     };
+
+    private final SecurityExceptionHandler securityExceptionHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(@NonNull HttpSecurity httpSecurity){
@@ -49,6 +54,7 @@ public class SecurityConfig {
                                         ACTUATOR_WHITELIST
                                 ).permitAll()
                                 // Public product view
+                                .requestMatchers( HttpMethod.GET,"/api/v1/inventory/**").permitAll()
                                 .requestMatchers( "/api/v1/inventory").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                 // Admin only
@@ -56,6 +62,8 @@ public class SecurityConfig {
 
 
                 ).addFilterBefore(new HeaderAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(ex->ex.authenticationEntryPoint(securityExceptionHandler)
+                        .accessDeniedHandler(securityExceptionHandler))
                 .build();
 
 

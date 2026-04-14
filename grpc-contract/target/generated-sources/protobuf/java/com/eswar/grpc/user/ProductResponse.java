@@ -5,11 +5,11 @@
 package com.eswar.grpc.user;
 
 /**
- * Protobuf type {@code ProductResponse}
+ * Protobuf type {@code product.ProductResponse}
  */
 public final class ProductResponse extends
     com.google.protobuf.GeneratedMessageV3 implements
-    // @@protoc_insertion_point(message_implements:ProductResponse)
+    // @@protoc_insertion_point(message_implements:product.ProductResponse)
     ProductResponseOrBuilder {
 private static final long serialVersionUID = 0L;
   // Use ProductResponse.newBuilder() to construct.
@@ -31,13 +31,13 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return com.eswar.grpc.user.Product.internal_static_ProductResponse_descriptor;
+    return com.eswar.grpc.user.Product.internal_static_product_ProductResponse_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return com.eswar.grpc.user.Product.internal_static_ProductResponse_fieldAccessorTable
+    return com.eswar.grpc.user.Product.internal_static_product_ProductResponse_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             com.eswar.grpc.user.ProductResponse.class, com.eswar.grpc.user.ProductResponse.Builder.class);
   }
@@ -360,21 +360,21 @@ private static final long serialVersionUID = 0L;
     return builder;
   }
   /**
-   * Protobuf type {@code ProductResponse}
+   * Protobuf type {@code product.ProductResponse}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:ProductResponse)
+      // @@protoc_insertion_point(builder_implements:product.ProductResponse)
       com.eswar.grpc.user.ProductResponseOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.eswar.grpc.user.Product.internal_static_ProductResponse_descriptor;
+      return com.eswar.grpc.user.Product.internal_static_product_ProductResponse_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.eswar.grpc.user.Product.internal_static_ProductResponse_fieldAccessorTable
+      return com.eswar.grpc.user.Product.internal_static_product_ProductResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               com.eswar.grpc.user.ProductResponse.class, com.eswar.grpc.user.ProductResponse.Builder.class);
     }
@@ -403,7 +403,7 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return com.eswar.grpc.user.Product.internal_static_ProductResponse_descriptor;
+      return com.eswar.grpc.user.Product.internal_static_product_ProductResponse_descriptor;
     }
 
     @java.lang.Override
@@ -829,10 +829,10 @@ private static final long serialVersionUID = 0L;
     }
 
 
-    // @@protoc_insertion_point(builder_scope:ProductResponse)
+    // @@protoc_insertion_point(builder_scope:product.ProductResponse)
   }
 
-  // @@protoc_insertion_point(class_scope:ProductResponse)
+  // @@protoc_insertion_point(class_scope:product.ProductResponse)
   private static final com.eswar.grpc.user.ProductResponse DEFAULT_INSTANCE;
   static {
     DEFAULT_INSTANCE = new com.eswar.grpc.user.ProductResponse();

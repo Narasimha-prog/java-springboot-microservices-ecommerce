@@ -5,6 +5,9 @@ syntax = "proto3";
 option java_package = "com.eswar.grpc.user";
 option java_multiple_files = true;
 
+package user;
+
+
 service UserService {
   // Get user by unique ID
   rpc GetUserById(UserIdRequest) returns (UserResponse);

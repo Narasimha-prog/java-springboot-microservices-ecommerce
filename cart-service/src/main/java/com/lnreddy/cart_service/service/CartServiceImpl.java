@@ -23,6 +23,22 @@ public class CartServiceImpl implements ICartService {
     private final ProductClient productClient; // Your gRPC stub wrapper
     private final ICartMapper cartMapper;
 
+
+    @Transactional
+    public CartResponseDTO incrementItemQuantity(String userId, String productId) {
+        CartEntity cart = findCartOrThrow(userId);
+        CartItemEntity item = findItemInCart(cart, productId);
+
+        // gRPC Check: Verify stock before allowing increment
+        var product = productClient.getProductMetadata(productId);
+//        if (item.getQuantity() + 1 > product.getStock()) {
+//            throw new BusinessException(ErrorCode.INSUFFICIENT_STOCK, productId);
+//        }
+
+        item.setQuantity(item.getQuantity() + 1);
+        cartRepository.save(cart);
+        return getCartByUserId(userId);
+    }
     @Override
     @Transactional
     public CartResponseDTO addItemToCart(String userId, CartItemRequest request) {
@@ -113,5 +129,19 @@ public class CartServiceImpl implements ICartService {
 
         // 4. Return the updated, enriched cart
         return getCartByUserId(userId);
+    }
+
+
+    private CartEntity findCartOrThrow(String userId) {
+        return cartRepository.findByUserId(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.CART_NOT_FOUND, userId));
+    }
+
+
+    private CartItemEntity findItemInCart(CartEntity cart, String productId) {
+        return cart.getItems().stream()
+                .filter(item -> item.getProductId().equals(productId))
+                .findFirst()
+                .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND, productId));
     }
 }

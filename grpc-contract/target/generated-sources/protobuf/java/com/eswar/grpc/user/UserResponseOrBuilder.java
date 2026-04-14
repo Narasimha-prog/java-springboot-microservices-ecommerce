@@ -5,7 +5,7 @@
 package com.eswar.grpc.user;
 
 public interface UserResponseOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:UserResponse)
+    // @@protoc_insertion_point(interface_extends:user.UserResponse)
     com.google.protobuf.MessageOrBuilder {
 
   /**

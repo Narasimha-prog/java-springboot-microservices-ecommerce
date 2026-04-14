@@ -11,13 +11,13 @@ import com.eswar.userservice.service.IUserService;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
+import net.devh.boot.grpc.server.service.GrpcService;
 
 import java.util.UUID;
 
-@Component
 @RequiredArgsConstructor
 @Slf4j
+@GrpcService
 public class GrpcUserService extends UserServiceGrpc.UserServiceImplBase {
 
    private final IUserService userService;

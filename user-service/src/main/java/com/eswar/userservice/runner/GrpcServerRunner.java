@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
@@ -15,6 +17,12 @@ import java.util.Objects;
 @Component
 @Slf4j
 @RequiredArgsConstructor
+@ConditionalOnProperty(
+        name = "grpc.manual",
+        havingValue = "true",
+        matchIfMissing = false
+        // 👈 This explicitly says: "If the property is missing, don't run this"
+)
 public class GrpcServerRunner implements ApplicationRunner {
 
 

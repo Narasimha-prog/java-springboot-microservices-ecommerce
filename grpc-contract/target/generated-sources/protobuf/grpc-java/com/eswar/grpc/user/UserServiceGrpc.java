@@ -12,7 +12,7 @@ public final class UserServiceGrpc {
 
   private UserServiceGrpc() {}
 
-  public static final java.lang.String SERVICE_NAME = "UserService";
+  public static final java.lang.String SERVICE_NAME = "user.UserService";
 
   // Static method descriptors that strictly reflect the proto.
   private static volatile io.grpc.MethodDescriptor<com.eswar.grpc.user.UserIdRequest,

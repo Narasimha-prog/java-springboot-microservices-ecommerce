@@ -5,11 +5,11 @@
 package com.eswar.grpc.user;
 
 /**
- * Protobuf type {@code UserEmailRequest}
+ * Protobuf type {@code user.UserEmailRequest}
  */
 public final class UserEmailRequest extends
     com.google.protobuf.GeneratedMessageV3 implements
-    // @@protoc_insertion_point(message_implements:UserEmailRequest)
+    // @@protoc_insertion_point(message_implements:user.UserEmailRequest)
     UserEmailRequestOrBuilder {
 private static final long serialVersionUID = 0L;
   // Use UserEmailRequest.newBuilder() to construct.
@@ -29,13 +29,13 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return com.eswar.grpc.user.User.internal_static_UserEmailRequest_descriptor;
+    return com.eswar.grpc.user.User.internal_static_user_UserEmailRequest_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return com.eswar.grpc.user.User.internal_static_UserEmailRequest_fieldAccessorTable
+    return com.eswar.grpc.user.User.internal_static_user_UserEmailRequest_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             com.eswar.grpc.user.UserEmailRequest.class, com.eswar.grpc.user.UserEmailRequest.Builder.class);
   }
@@ -236,21 +236,21 @@ private static final long serialVersionUID = 0L;
     return builder;
   }
   /**
-   * Protobuf type {@code UserEmailRequest}
+   * Protobuf type {@code user.UserEmailRequest}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:UserEmailRequest)
+      // @@protoc_insertion_point(builder_implements:user.UserEmailRequest)
       com.eswar.grpc.user.UserEmailRequestOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.eswar.grpc.user.User.internal_static_UserEmailRequest_descriptor;
+      return com.eswar.grpc.user.User.internal_static_user_UserEmailRequest_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.eswar.grpc.user.User.internal_static_UserEmailRequest_fieldAccessorTable
+      return com.eswar.grpc.user.User.internal_static_user_UserEmailRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               com.eswar.grpc.user.UserEmailRequest.class, com.eswar.grpc.user.UserEmailRequest.Builder.class);
     }
@@ -276,7 +276,7 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return com.eswar.grpc.user.User.internal_static_UserEmailRequest_descriptor;
+      return com.eswar.grpc.user.User.internal_static_user_UserEmailRequest_descriptor;
     }
 
     @java.lang.Override
@@ -489,10 +489,10 @@ private static final long serialVersionUID = 0L;
     }
 
 
-    // @@protoc_insertion_point(builder_scope:UserEmailRequest)
+    // @@protoc_insertion_point(builder_scope:user.UserEmailRequest)
   }
 
-  // @@protoc_insertion_point(class_scope:UserEmailRequest)
+  // @@protoc_insertion_point(class_scope:user.UserEmailRequest)
   private static final com.eswar.grpc.user.UserEmailRequest DEFAULT_INSTANCE;
   static {
     DEFAULT_INSTANCE = new com.eswar.grpc.user.UserEmailRequest();

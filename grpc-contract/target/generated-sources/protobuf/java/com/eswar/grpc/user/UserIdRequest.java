@@ -9,11 +9,11 @@ package com.eswar.grpc.user;
  * Request messages
  * </pre>
  *
- * Protobuf type {@code UserIdRequest}
+ * Protobuf type {@code user.UserIdRequest}
  */
 public final class UserIdRequest extends
     com.google.protobuf.GeneratedMessageV3 implements
-    // @@protoc_insertion_point(message_implements:UserIdRequest)
+    // @@protoc_insertion_point(message_implements:user.UserIdRequest)
     UserIdRequestOrBuilder {
 private static final long serialVersionUID = 0L;
   // Use UserIdRequest.newBuilder() to construct.
@@ -33,13 +33,13 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return com.eswar.grpc.user.User.internal_static_UserIdRequest_descriptor;
+    return com.eswar.grpc.user.User.internal_static_user_UserIdRequest_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return com.eswar.grpc.user.User.internal_static_UserIdRequest_fieldAccessorTable
+    return com.eswar.grpc.user.User.internal_static_user_UserIdRequest_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             com.eswar.grpc.user.UserIdRequest.class, com.eswar.grpc.user.UserIdRequest.Builder.class);
   }
@@ -244,21 +244,21 @@ private static final long serialVersionUID = 0L;
    * Request messages
    * </pre>
    *
-   * Protobuf type {@code UserIdRequest}
+   * Protobuf type {@code user.UserIdRequest}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:UserIdRequest)
+      // @@protoc_insertion_point(builder_implements:user.UserIdRequest)
       com.eswar.grpc.user.UserIdRequestOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.eswar.grpc.user.User.internal_static_UserIdRequest_descriptor;
+      return com.eswar.grpc.user.User.internal_static_user_UserIdRequest_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.eswar.grpc.user.User.internal_static_UserIdRequest_fieldAccessorTable
+      return com.eswar.grpc.user.User.internal_static_user_UserIdRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               com.eswar.grpc.user.UserIdRequest.class, com.eswar.grpc.user.UserIdRequest.Builder.class);
     }
@@ -284,7 +284,7 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return com.eswar.grpc.user.User.internal_static_UserIdRequest_descriptor;
+      return com.eswar.grpc.user.User.internal_static_user_UserIdRequest_descriptor;
     }
 
     @java.lang.Override
@@ -497,10 +497,10 @@ private static final long serialVersionUID = 0L;
     }
 
 
-    // @@protoc_insertion_point(builder_scope:UserIdRequest)
+    // @@protoc_insertion_point(builder_scope:user.UserIdRequest)
   }
 
-  // @@protoc_insertion_point(class_scope:UserIdRequest)
+  // @@protoc_insertion_point(class_scope:user.UserIdRequest)
   private static final com.eswar.grpc.user.UserIdRequest DEFAULT_INSTANCE;
   static {
     DEFAULT_INSTANCE = new com.eswar.grpc.user.UserIdRequest();

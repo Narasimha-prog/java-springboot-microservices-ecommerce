@@ -21,7 +21,6 @@ public abstract class ProductMapper {
 
     @Value("${file.storage.base-url:http://localhost:8083/uploads/}")
 
-
     protected String fileBaseUrl;
     // ADD THIS: Maps Update DTO to the existing Entity
     @Mapping(target = "id", ignore = true) // Don't let the DTO change the ID

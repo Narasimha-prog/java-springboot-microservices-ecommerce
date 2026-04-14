@@ -16,15 +16,15 @@ public final class Product {
         (com.google.protobuf.ExtensionRegistryLite) registry);
   }
   static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_ProductRequest_descriptor;
+    internal_static_product_ProductRequest_descriptor;
   static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_ProductRequest_fieldAccessorTable;
+      internal_static_product_ProductRequest_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_ProductResponse_descriptor;
+    internal_static_product_ProductResponse_descriptor;
   static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_ProductResponse_fieldAccessorTable;
+      internal_static_product_ProductResponse_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -34,28 +34,29 @@ public final class Product {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\rProduct.proto\"#\n\016ProductRequest\022\021\n\tpro" +
-      "ductId\030\001 \001(\t\"S\n\017ProductResponse\022\021\n\tprodu" +
-      "ctId\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022\r\n\005price\030\003 \001(\001\022" +
-      "\020\n\010imageUrl\030\004 \001(\t2A\n\016ProductService\022/\n\nG" +
-      "etProduct\022\017.ProductRequest\032\020.ProductResp" +
-      "onseB\027\n\023com.eswar.grpc.userP\001b\006proto3"
+      "\n\rProduct.proto\022\007product\"#\n\016ProductReque" +
+      "st\022\021\n\tproductId\030\001 \001(\t\"S\n\017ProductResponse" +
+      "\022\021\n\tproductId\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022\r\n\005pri" +
+      "ce\030\003 \001(\001\022\020\n\010imageUrl\030\004 \001(\t2Q\n\016ProductSer" +
+      "vice\022?\n\nGetProduct\022\027.product.ProductRequ" +
+      "est\032\030.product.ProductResponseB\027\n\023com.esw" +
+      "ar.grpc.userP\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
         });
-    internal_static_ProductRequest_descriptor =
+    internal_static_product_ProductRequest_descriptor =
       getDescriptor().getMessageTypes().get(0);
-    internal_static_ProductRequest_fieldAccessorTable = new
+    internal_static_product_ProductRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_ProductRequest_descriptor,
+        internal_static_product_ProductRequest_descriptor,
         new java.lang.String[] { "ProductId", });
-    internal_static_ProductResponse_descriptor =
+    internal_static_product_ProductResponse_descriptor =
       getDescriptor().getMessageTypes().get(1);
-    internal_static_ProductResponse_fieldAccessorTable = new
+    internal_static_product_ProductResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_ProductResponse_descriptor,
+        internal_static_product_ProductResponse_descriptor,
         new java.lang.String[] { "ProductId", "Name", "Price", "ImageUrl", });
   }
 

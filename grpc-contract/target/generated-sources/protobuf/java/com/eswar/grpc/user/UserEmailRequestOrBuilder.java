@@ -5,7 +5,7 @@
 package com.eswar.grpc.user;
 
 public interface UserEmailRequestOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:UserEmailRequest)
+    // @@protoc_insertion_point(interface_extends:user.UserEmailRequest)
     com.google.protobuf.MessageOrBuilder {
 
   /**

@@ -5,7 +5,7 @@
 package com.eswar.grpc.user;
 
 public interface UserIdRequestOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:UserIdRequest)
+    // @@protoc_insertion_point(interface_extends:user.UserIdRequest)
     com.google.protobuf.MessageOrBuilder {
 
   /**

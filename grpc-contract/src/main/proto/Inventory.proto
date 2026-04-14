@@ -1,0 +1,21 @@
+syntax="proto3";
+
+option java_package = "com.eswar.grpc.inventory";
+option java_multiple_files = true;
+
+package inventory;
+
+
+service InventoryService{
+  rpc InventoryDetails(InventoryRequest) returns (InventoryResponse);
+}
+
+
+message InventoryRequest {
+  string productId = 1;
+}
+
+
+message InventoryResponse {
+  int32 availableStock = 1;
+}

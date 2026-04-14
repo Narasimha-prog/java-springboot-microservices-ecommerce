@@ -18,6 +18,7 @@ public enum ErrorCode {
  ORDER_ACCESS_DENIED(HttpStatus.FORBIDDEN, "You do not have access to this order"),
 
  // ================= PRODUCT / DOWNSTREAM =================
+ CART_NOT_FOUND(HttpStatus.NOT_FOUND,"Cart not found "),
  PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "Product not found"),
  PRODUCT_SERVICE_FAILED(HttpStatus.BAD_GATEWAY, "Product service unavailable"),
 

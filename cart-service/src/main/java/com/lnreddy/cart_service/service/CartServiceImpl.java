@@ -1,13 +1,20 @@
 package com.lnreddy.cart_service.service;
 
+import com.eswar.grpc.inventory.InventoryResponse;
+import com.eswar.grpc.user.ProductResponse;
 import com.lnreddy.cart_service.dto.*;
 import com.lnreddy.cart_service.entity.*;
 import com.lnreddy.cart_service.exceptions.BusinessException;
 import com.lnreddy.cart_service.exceptions.ErrorCode;
+import com.lnreddy.cart_service.grpc.client.InventoryClient;
+import com.lnreddy.cart_service.grpc.mapper.GrpcExceptionMapper;
 import com.lnreddy.cart_service.mapper.ICartMapper;
 import com.lnreddy.cart_service.repository.ICartRepository;
 import com.lnreddy.cart_service.grpc.client.ProductClient;
+import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,11 +24,13 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CartServiceImpl implements ICartService {
 
     private final ICartRepository cartRepository;
     private final ProductClient productClient; // Your gRPC stub wrapper
     private final ICartMapper cartMapper;
+    private final InventoryClient inventoryClient;
 
 
     @Transactional
@@ -30,15 +39,41 @@ public class CartServiceImpl implements ICartService {
         CartItemEntity item = findItemInCart(cart, productId);
 
         // gRPC Check: Verify stock before allowing increment
-        var product = productClient.getProductMetadata(productId);
-//        if (item.getQuantity() + 1 > product.getStock()) {
-//            throw new BusinessException(ErrorCode.INSUFFICIENT_STOCK, productId);
-//        }
+        InventoryResponse inventoryResponse;
+        try {
+            inventoryResponse = inventoryClient.getProductStock(productId);
+
+        } catch (
+                StatusRuntimeException ex) {
+            log.warn("gRPC error during login", ex);
+            throw GrpcExceptionMapper.map(ex);
+        }
+
+
+        if (item.getQuantity() + 1 > inventoryResponse.getAvailableStock()) {
+            throw new BusinessException(ErrorCode.INSUFFICIENT_STOCK, productId);
+        }
 
         item.setQuantity(item.getQuantity() + 1);
         cartRepository.save(cart);
         return getCartByUserId(userId);
     }
+
+    @Transactional
+    public CartResponseDTO decrementItemQuantity(String userId, String productId) {
+        CartEntity cart = findCartOrThrow(userId);
+        CartItemEntity item = findItemInCart(cart, productId);
+
+        if (item.getQuantity() <= 1) {
+            // Option: Either throw error or just remove the item
+            return removeItemFromCart(userId, productId);
+        }
+
+        item.setQuantity(item.getQuantity() - 1);
+        cartRepository.save(cart);
+        return getCartByUserId(userId);
+    }
+
     @Override
     @Transactional
     public CartResponseDTO addItemToCart(String userId, CartItemRequest request) {
@@ -50,18 +85,43 @@ public class CartServiceImpl implements ICartService {
                     return cartRepository.save(newCart);
                 });
 
+
         // 2. Check if product already exists in cart
         Optional<CartItemEntity> existingItem = cart.getItems().stream()
                 .filter(item -> item.getProductId().equals(request.productId()))
                 .findFirst();
 
+
+        //3 fetch Inventory
+        InventoryResponse inventory;
+        try {
+            log.info("Validating stock for product {} before adding to cart", request.productId());
+            inventory = inventoryClient.getProductStock(request.productId().toString());
+        } catch (StatusRuntimeException ex) {
+            log.error("Failed to fetch inventory for product {}: {}", request.productId(), ex.getStatus());
+            throw GrpcExceptionMapper.map(ex);
+        }
+
+        //4 validate stock
+
+        int currentInCart = existingItem.map(CartItemEntity::getQuantity).orElse(0);
+        int requestedTotal = currentInCart +request.quantity();
+
+        // 4. VALIDATE: Ensure requested total doesn't exceed warehouse stock
+        if (requestedTotal > inventory.getAvailableStock()) {
+            log.warn("Stock exceeded for product {}. Available: {}, Requested: {}",
+                    request.productId(), inventory.getAvailableStock(), requestedTotal);
+            throw new BusinessException(ErrorCode.INSUFFICIENT_STOCK, request.productId().toString());
+        }
+
         if (existingItem.isPresent()) {
-            existingItem.get().setQuantity(existingItem.get().getQuantity() + request.quantity());
+            existingItem.get().setQuantity(requestedTotal);
         } else {
             CartItemEntity newItem = cartMapper.toEntity(request);
             newItem.setCart(cart);
             cart.getItems().add(newItem);
         }
+
 
         cartRepository.save(cart);
         return getCartByUserId(userId); // Return the full enriched cart
@@ -87,7 +147,15 @@ public class CartServiceImpl implements ICartService {
 
     private CartItemDTO enrichItem(CartItemEntity item) {
         // CALL gRPC: Fetching live product data
-        var product = productClient.getProductMetadata(item.getProductId().toString());
+
+        ProductResponse product;
+        try {
+             product = productClient.getProductMetadata(item.getProductId().toString());
+
+        }catch (StatusRuntimeException ex){
+            log.warn("gRPC error during login", ex);
+            throw GrpcExceptionMapper.map(ex);
+        }
         BigDecimal price = new BigDecimal(product.getPrice());
 
         return new CartItemDTO(
@@ -118,7 +186,7 @@ public class CartServiceImpl implements ICartService {
 
         // 2. Remove the item from the collection
         // The orphanRemoval = true in your Entity will trigger the DELETE in SQL
-        boolean removed = cart.getItems().removeIf(item -> item.getProductId().equals(productId));
+        boolean removed = cart.getItems().removeIf(item -> item.getProductId().equals(UUID.fromString(productId)));
 
         if (!removed) {
             throw new BusinessException(ErrorCode.PRODUCT_NOT_FOUND, userId);
@@ -138,9 +206,9 @@ public class CartServiceImpl implements ICartService {
     }
 
 
-    private CartItemEntity findItemInCart(CartEntity cart, String productId) {
+    private @NonNull CartItemEntity findItemInCart(@NonNull CartEntity cart, String productId) {
         return cart.getItems().stream()
-                .filter(item -> item.getProductId().equals(productId))
+                .filter(item -> item.getProductId().equals(UUID.fromString(productId)))
                 .findFirst()
                 .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND, productId));
     }

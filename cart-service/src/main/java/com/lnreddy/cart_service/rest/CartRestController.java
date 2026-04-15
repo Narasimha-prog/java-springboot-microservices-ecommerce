@@ -47,4 +47,20 @@ public class CartRestController {
     public void clearCart(@AuthenticationPrincipal  String userId) {
         cartService.clearCart(userId);
     }
+
+    @PatchMapping("/items/{productId}/increment")
+    public ResponseEntity<CartResponseDTO> incrementItem(
+            @AuthenticationPrincipal String userId,
+            @PathVariable String productId) {
+        // Calls the service logic that performs the gRPC inventory check
+        return ResponseEntity.ok(cartService.incrementItemQuantity(userId, productId));
+    }
+
+    @PatchMapping("/items/{productId}/decrement")
+    public ResponseEntity<CartResponseDTO> decrementItem(
+            @AuthenticationPrincipal String userId,
+            @PathVariable String productId) {
+        // Calls the service logic that handles local quantity reduction
+        return ResponseEntity.ok(cartService.decrementItemQuantity(userId, productId));
+    }
 }

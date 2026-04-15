@@ -16,4 +16,8 @@ public interface ICartService {
 
     // Clear cart after checkout
     void clearCart(String userId);
+
+    CartResponseDTO decrementItemQuantity(String userId, String productId);
+
+    CartResponseDTO incrementItemQuantity(String userId, String productId);
 }

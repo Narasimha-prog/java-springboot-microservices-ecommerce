@@ -2,14 +2,16 @@ package com.eswar.productservice.grpc.provider;
 
 import com.eswar.grpc.user.ProductRequest;
 import com.eswar.grpc.user.ProductServiceGrpc;
+import com.eswar.productservice.exception.BusinessException;
 import com.eswar.productservice.service.IProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.devh.boot.grpc.server.service.GrpcService;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
-@Component
+@GrpcService
 @RequiredArgsConstructor
 @Slf4j
 public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBase {
@@ -38,14 +40,28 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
             responseObserver.onNext(response);
             responseObserver.onCompleted();
 
-        } catch (Exception e) {
-            log.error("Error fetching product", e);
+        } catch (IllegalArgumentException ex) {
+            log.error("Invalid UUID format: {}", request.getProductId());
+            responseObserver.onError(io.grpc.Status.INVALID_ARGUMENT
+                    .withDescription("Invalid Product ID format")
+                    .asRuntimeException());
 
+        } catch (BusinessException businessException) {
             responseObserver.onError(
                     io.grpc.Status.NOT_FOUND
-                            .withDescription(e.getMessage())
+                            .withDescription("Product not found")
+                            .asRuntimeException()
+            );
+
+        } catch (Exception ex) {
+            log.error("Internal error in getProduct", ex);
+
+            responseObserver.onError(
+                    io.grpc.Status.INTERNAL
+                            .withDescription("Internal server error")
                             .asRuntimeException()
             );
         }
+
     }
 }

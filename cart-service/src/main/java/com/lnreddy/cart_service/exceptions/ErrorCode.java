@@ -32,6 +32,7 @@ public enum ErrorCode {
  SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "Service temporarily unavailable"),
  DOWNSTREAM_SERVICE_ERROR(HttpStatus.BAD_GATEWAY, "Error from downstream service"),
  TIMEOUT(HttpStatus.GATEWAY_TIMEOUT, "Request timeout"),
+ INSUFFICIENT_STOCK(HttpStatus.NOT_FOUND,"Stock is not there"),
 
  // validation
  INVALID_REQUEST(HttpStatus.BAD_REQUEST, "Invalid request"),

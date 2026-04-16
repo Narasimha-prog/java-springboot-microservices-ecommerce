@@ -30,6 +30,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final GrpcUserDetailsService userDetailsService; // loads user by email or username
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getServletPath();
+        // Skip this filter for refresh and login endpoints
+        return path.equals("/api/v1/auth/refresh") || path.equals("/api/v1/auth/login");
+    }
+    @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain)

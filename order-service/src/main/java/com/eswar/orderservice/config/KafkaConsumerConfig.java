@@ -40,7 +40,7 @@ public class KafkaConsumerConfig {
 
         ConcurrentKafkaListenerContainerFactory<String, OrderStatusEvent> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
-
+        factory.getContainerProperties().setAckMode(org.springframework.kafka.listener.ContainerProperties.AckMode.MANUAL_IMMEDIATE);
         factory.setConsumerFactory(orderStatusConsumerFactory());
         return factory;
     }

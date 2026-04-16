@@ -187,11 +187,10 @@ public class OrderServiceImp implements IOrderService {
     }
 
     @Override
-    public OrderResponseDto getOrderById(String orderId) {
+    public OrderResponseDto getOrderById(UUID orderId) {
 
-        UUID id = parseUUID(orderId, ErrorCode.ORDER_INVALID_ID);
 
-        OrderEntity order = orderRepository.findById(id)
+        OrderEntity order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ORDER_NOT_FOUND));
 
         return mapper.toResponse(order);

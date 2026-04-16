@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -45,6 +46,15 @@ public class OrderRestController {
         return ResponseEntity.ok(orderService.getOrdersByCustomerId(userId,pageable));
     }
 
+    @GetMapping("/{orderId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<OrderResponseDto> getOrderById(Principal principal,@PathVariable UUID orderId) {
+
+
+
+        return ResponseEntity.ok(orderService.getOrderById(orderId));
+    }
+
 
     // ✅ ADMIN can update order
     @PutMapping("/{orderId}")
@@ -61,5 +71,9 @@ public class OrderRestController {
         orderService.cancelOrder(orderId);
         return ResponseEntity.noContent().build();
     }
+
+
+
+
 
 }

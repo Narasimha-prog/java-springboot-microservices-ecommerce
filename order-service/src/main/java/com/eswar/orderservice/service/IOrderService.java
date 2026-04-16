@@ -18,7 +18,7 @@ public interface IOrderService {
      void handleOrderStatusEvent(OrderStatusEvent event);
     OrderResponseDto createOrder(OrderDto dto, Principal principal);
     PageResponse<OrderResponseDto> getALlOrders(Pageable pageable);
-    OrderResponseDto getOrderById(String orderId);
+    OrderResponseDto getOrderById(UUID orderId);
     OrderResponseDto updateOrder(String orderId, OrderDto orderDto);
     void cancelOrder(String orderId);
     boolean isOrderOwnedByUser(String orderId, String userId);

@@ -8,6 +8,7 @@ import com.eswar.orderservice.constants.OrderStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 @Getter
@@ -37,6 +38,10 @@ public class OrderEntity extends BaseEntity {
     @Column(nullable = false)
     @ToString.Include
     private OrderStatus status;
+
+    @Column(name = "total_price", nullable = false, precision = 19, scale = 2)
+    @ToString.Include
+    private BigDecimal totalPrice;
 
     // payment reference from Payment Service
     @Column(name = "payment_reference")

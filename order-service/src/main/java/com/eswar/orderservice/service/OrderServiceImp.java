@@ -168,6 +168,7 @@ public class OrderServiceImp implements IOrderService {
 
             items.add(item);
         }
+        order.setTotalPrice(totalAmount);
 
         order.setItems(items);
 
@@ -236,6 +237,7 @@ public class OrderServiceImp implements IOrderService {
         }
 
         existing.setItems(items);
+        existing.setTotalPrice(totalAmount);
         existing.setStatus(OrderStatus.CONFIRMED);
 
         OrderEntity saved = orderRepository.save(existing);

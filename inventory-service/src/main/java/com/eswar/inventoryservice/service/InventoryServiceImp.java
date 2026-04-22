@@ -60,6 +60,7 @@ public class  InventoryServiceImp implements IInventoryService{
             // Step C: Risky Business Logic
             self.processInventory(event, eventEntity);
         } catch (Exception ex) {
+            log.warn("error while handling process inventory",ex);
             // Step D: Record Failure (Always Commits)
             self.recordFailure(eventEntity, ex.getMessage());
         }

@@ -116,6 +116,7 @@ public class OrderServiceImp implements IOrderService {
         entity.setErrorMessage(error);
         eventRepository.save(entity);
     }
+
     // ================= HELPER =================
 
     private UUID parseUUID(String id, ErrorCode errorCode) {

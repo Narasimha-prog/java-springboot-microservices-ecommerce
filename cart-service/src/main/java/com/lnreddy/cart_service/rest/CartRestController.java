@@ -3,6 +3,7 @@ package com.lnreddy.cart_service.rest;
 import com.lnreddy.cart_service.dto.CartItemRequest;
 import com.lnreddy.cart_service.dto.CartResponseDTO;
 import com.lnreddy.cart_service.service.ICartService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class CartRestController {
     private final ICartService cartService;
 
     @GetMapping()
+    @Operation(summary = "to get cart for user", description = "we can get cart using userid")
     public ResponseEntity<CartResponseDTO> getCart(@AuthenticationPrincipal String userId) {
         return ResponseEntity.ok(cartService.getCartByUserId(userId));
     }

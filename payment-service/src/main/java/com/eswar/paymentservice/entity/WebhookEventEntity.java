@@ -17,7 +17,10 @@ import java.util.UUID;
                 @Index(name = "idx_event_type", columnList = "eventType"),
                 @Index(name = "webhook_idx_status", columnList = "status"),
                 @Index(name = "idx_resource_id", columnList = "resourceId")
-        })
+        }
+        ,uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"eventId", "eventType"})
+})
 @Getter
 @Setter
 public class WebhookEventEntity extends AbstractAuditingEntity {
@@ -27,7 +30,7 @@ public class WebhookEventEntity extends AbstractAuditingEntity {
     private UUID id;
 
     // Razorpay event id (IMPORTANT for idempotency)
-    @Column(unique = true, nullable = false)
+    @Column( nullable = false)
     private String eventId;
 
     @Column(nullable = false)
@@ -36,7 +39,7 @@ public class WebhookEventEntity extends AbstractAuditingEntity {
     private UUID orderId;
     // Full payload (store for debugging/replay)
     @Lob
-    @Column(nullable = false)
+    @Column(nullable = false,columnDefinition = "TEXT")
     private String payload;
 
     private String resourceId;
@@ -44,7 +47,7 @@ public class WebhookEventEntity extends AbstractAuditingEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private WebhookStatus status= WebhookStatus.RECEIVED;
-
+    @Column(columnDefinition = "TEXT")
     private String errorMessage;
 
     private Instant processedAt;

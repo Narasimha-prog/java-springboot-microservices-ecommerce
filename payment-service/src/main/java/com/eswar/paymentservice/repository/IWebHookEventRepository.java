@@ -7,5 +7,5 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface IWebHookEventRepository extends JpaRepository<WebhookEventEntity, UUID> {
-      Optional<WebhookEventEntity> findByEventId(String eventTd);
+      Optional<WebhookEventEntity> findByEventIdAndEventType(String eventTd,String eventType);
 }

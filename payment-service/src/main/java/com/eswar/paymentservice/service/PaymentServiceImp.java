@@ -26,6 +26,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -35,6 +36,7 @@ import java.math.BigDecimal;
 import java.security.Principal;
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -131,17 +133,32 @@ public class PaymentServiceImp implements IPaymentService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public WebhookEventEntity recordWebhookReceipt(UUID orderId,String eventId, String payload, JSONObject json) {
-        return webHookEventRepository.findByEventId(eventId)
-                .orElseGet(() -> {
-                    WebhookEventEntity entity = new WebhookEventEntity();
-                    entity.setOrderId(orderId);
-                    entity.setEventId(eventId);
-                    entity.setPayload(payload);
-                    entity.setEventType(json.getString("event"));
-                    entity.setStatus(WebhookStatus.RECEIVED);
-                    return webHookEventRepository.save(entity);
-                });
+    public WebhookEventEntity recordWebhookReceipt(UUID orderId, String eventId, String payload, JSONObject json) {
+        String currentType = json.getString("event");
+
+        // 1. Still do the check (to save time if it's already committed)
+        Optional<WebhookEventEntity> existing = webHookEventRepository.findByEventIdAndEventType(eventId, currentType);
+        if (existing.isPresent()) {
+            return existing.get();
+        }
+
+        // 2. Try to save, but be prepared for a race condition failure
+        try {
+            WebhookEventEntity entity = new WebhookEventEntity();
+            entity.setOrderId(orderId);
+            entity.setEventId(eventId);
+            entity.setPayload(payload);
+            entity.setEventType(currentType);
+            entity.setResourceId(eventId);
+            entity.setStatus(WebhookStatus.RECEIVED);
+
+            return webHookEventRepository.saveAndFlush(entity);
+        } catch (DataIntegrityViolationException e) {
+            // 3. If we hit a duplicate key error, someone else just saved it.
+            // Fetch that one and return it instead of crashing.
+            return webHookEventRepository.findByEventIdAndEventType(eventId, currentType)
+                    .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_ACCESS_DENIED,"Concurrency error: Event vanished"));
+        }
     }
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void processWebhookBusinessLogic(JSONObject eventJson, WebhookEventEntity webhookEvent) {
@@ -162,18 +179,29 @@ public class PaymentServiceImp implements IPaymentService {
 
         String eventType = eventJson.getString("event");
 
-        if ("payment.captured".equals(eventType)) {
+        if ("payment.authorized".equals(eventType)) {
+            // Just update internal status to PENDING/AUTHORIZED
+            payment.setStatus(PaymentStatus.PENDING);
+            webhookEvent.setStatus(WebhookStatus.PROCESSING);
+            log.info("Payment authorized for order {}. Waiting for capture.", razorpayOrderId);
+        }
+        else if ("payment.captured".equals(eventType)) {
+            // This is the trigger for Kafka and Order Success
+            if (payment.getStatus() == PaymentStatus.SUCCESS) {
+                log.info("Payment already marked as SUCCESS. Skipping Kafka.");
+                return;
+            }
             payment.setStatus(PaymentStatus.SUCCESS);
-            // 🚀 Call Kafka Service using data from EventEntity
-            paymentKafkaService.sendOrderStatusEvent(originalEvent,EventStatus.PROCESSED,"Payment is success",payment.getRazorpayPaymentId());
-        } else if ("payment.failed".equals(eventType)) {
+            webhookEvent.setStatus(WebhookStatus.PROCESSED);
+            paymentKafkaService.sendOrderStatusEvent(originalEvent, EventStatus.PROCESSED, "Payment is success", payment.getRazorpayPaymentId());
+        }
+        else if ("payment.failed".equals(eventType)) {
             payment.setStatus(PaymentStatus.FAILED);
-            paymentKafkaService.sendOrderStatusEvent(originalEvent,EventStatus.FAILED,"Payment is failed",null);
+            paymentKafkaService.sendOrderStatusEvent(originalEvent, EventStatus.FAILED, "Payment is failed", null);
         }
 
         // 3. Update Statuses
         paymentRepository.save(payment);
-        webhookEvent.setStatus(WebhookStatus.PROCESSED);
         webhookEvent.setProcessedAt(Instant.now());
         webHookEventRepository.save(webhookEvent);
     }
@@ -363,21 +391,28 @@ public class PaymentServiceImp implements IPaymentService {
         }
 
         JSONObject eventJson = new JSONObject(payload);
-        String razorpayEventId = eventJson.getString("id");
+
+        // FIX 1: Extract the Payment ID to use as your reference instead of a missing root ID
+        String razorpayPaymentId = eventJson.getJSONObject("payload")
+                .getJSONObject("payment")
+                .getJSONObject("entity")
+                .getString("id"); // This is "pay_SgwxwW4T7a3pIj"
+
+// FIX 2: Correct way to get the Order ID (already matches your current nested logic)
         String razorpayOrderId = eventJson.getJSONObject("payload")
                 .getJSONObject("payment")
                 .getJSONObject("entity")
-                .getString("order_id");
+                .getString("order_id"); // This is "order_SgwxUPKIr8EnjP"
 
         PaymentEntity payment = paymentRepository.findByRazorpayOrderId(razorpayOrderId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_NOT_FOUND));
 
         // 2. Step A: Record Webhook Receipt (Independent Transaction)
-        WebhookEventEntity webhookEvent = self.recordWebhookReceipt(payment.getOrderId(),razorpayEventId, payload, eventJson);
+        WebhookEventEntity webhookEvent = self.recordWebhookReceipt(payment.getOrderId(),razorpayPaymentId, payload, eventJson);
 
         // 3. Step B: Skip if already done
         if (webhookEvent.getStatus() == WebhookStatus.PROCESSED) {
-            log.info("Webhook {} already processed. Skipping.", razorpayEventId);
+            log.info("Webhook {} already processed. Skipping.", razorpayPaymentId);
             return;
         }
 

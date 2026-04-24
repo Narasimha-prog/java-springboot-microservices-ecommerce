@@ -18,7 +18,7 @@ public enum ErrorCode {
     INVENTORY_NOT_FOUND( HttpStatus.NOT_FOUND, "Inventory not found: "),
     INSUFFICIENT_STOCK(HttpStatus.BAD_REQUEST,"Insufficient Stock"),
     INVENTORY_ALREADY_EXISTS( HttpStatus.NOT_FOUND, "inventory already exists: "),
-
+    EVENT_NOT_FOUND(HttpStatus.NOT_FOUND,"Event is not there"),
     // validation
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "Invalid request"),
     VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "Validation failed"),

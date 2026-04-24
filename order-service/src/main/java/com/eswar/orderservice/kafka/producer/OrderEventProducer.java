@@ -2,6 +2,7 @@ package com.eswar.orderservice.kafka.producer;
 
 import com.eswar.orderservice.kafka.event.OrderCreatedEvent;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -9,6 +10,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class OrderEventProducer {
 
 
@@ -26,7 +28,7 @@ public class OrderEventProducer {
                 event.totalAmount(),
                 event.items()
         );
-
+      log.info("order-event is created and send ...");
         kafkaTemplate.send("order-created", eventWithNewTraceId);
     }
 }

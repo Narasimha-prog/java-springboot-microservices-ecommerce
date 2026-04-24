@@ -17,7 +17,6 @@ import org.springframework.stereotype.Component;
 public class OrderEventConsumer {
 
     private final IInventoryService inventoryService;
-    private final KafkaTemplate<String,Object> kafkaTemplate;
 
     @KafkaListener(topics = "order-created",groupId = "inventory-group")
     public void handleOrderCreated(OrderCreatedEvent event, Acknowledgment ack) {

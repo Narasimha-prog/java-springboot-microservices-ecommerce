@@ -14,9 +14,10 @@ import com.eswar.inventoryservice.kafka.service.InventoryKafkaService;
 import com.eswar.inventoryservice.mapper.IInventoryMapper;
 import com.eswar.inventoryservice.repository.IEventRepository;
 import com.eswar.inventoryservice.repository.IInventoryRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.common.errors.ResourceNotFoundException;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -33,7 +34,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class  InventoryServiceImp implements IInventoryService{
-
+    private final ObjectMapper objectMapper;
     private  final IInventoryRepository inventoryRepository;
     private final IInventoryMapper  inventoryMapper;
     private final IEventRepository eventRepository;
@@ -119,16 +120,26 @@ public class  InventoryServiceImp implements IInventoryService{
                     return eventRepository.save(existing);
                 })
                 .orElseGet(() -> {
-                    log.info("First attempt for event {}. Initializing trace set.", event.eventId());
+                    log.info("First attempt for event {}. Saving items payload.", event.eventId());
 
-                    // 🔹 Create with the original traceId from the event
+                    // 1. Convert the items (or the whole event) to a JSON String
+                    String jsonPayload;
+                    try {
+                        // Storing only the items is more efficient
+                        jsonPayload = objectMapper.writeValueAsString(event.items());
+                    } catch (JsonProcessingException e) {
+                        log.error("Failed to serialize items for event {}", event.eventId());
+                        jsonPayload = "{}"; // Fallback to avoid crash
+                    }
+
+                    // 2. Build the entity with the JSON payload
                     EventEntity newEntity = EventEntity.builder()
                             .eventId(event.eventId())
                             .traceIds(new HashSet<>(Set.of(event.traceId())))
                             .orderId(event.orderId())
                             .eventType(EventType.INVENTORY)
                             .status(EventStatus.RECEIVED)
-                            .payload(event.toString())
+                            .payload(jsonPayload) // 🔥 Now we have a parseable JSON string!
                             .build();
                     return eventRepository.save(newEntity);
                 });
@@ -186,6 +197,66 @@ public class  InventoryServiceImp implements IInventoryService{
         InventoryEntity savedInventory = inventoryRepository.save(inventory);
 
         return inventoryMapper.toDto(savedInventory);
+    }
+
+    @Override
+    @Transactional
+    public void releaseReservedStock(UUID orderId) {
+        log.info("Releasing reserved stock for order: {}", orderId);
+
+        // 1. Fetch the original 'INVENTORY' ledger entry for this order
+        EventEntity originalEvent = eventRepository.findFirstByOrderIdAndEventTypeOrderByCreatedAtDesc(
+                        orderId, EventType.INVENTORY)
+                .orElseThrow(() -> new BusinessException(ErrorCode.EVENT_NOT_FOUND));
+
+        // 2. Parse the "recipe" of items from the JSON payload
+        Set<OrderItem> items = parseItemsFromPayload(originalEvent.getPayload());
+
+        // 3. Rollback: Available_Quantity ↑, Reserved_Quantity ↓
+        for (OrderItem item : items) {
+            InventoryEntity inv = inventoryRepository.findById(item.productId())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.INVENTORY_NOT_FOUND, item.productId()));
+
+            inv.setAvailableQuantity(inv.getAvailableQuantity() + item.quantity());
+            inv.setReservedQuantity(inv.getReservedQuantity() - item.quantity());
+
+            inventoryRepository.save(inv);
+        }
+        log.info("Successfully released stock for order {}", orderId);
+    }
+
+    @Override
+    @Transactional
+    public void commitStock(UUID orderId) {
+        log.info("Committing (finalizing) stock for order: {}", orderId);
+
+        // 1. Fetch the ledger
+        EventEntity originalEvent = eventRepository.findFirstByOrderIdAndEventTypeOrderByCreatedAtDesc(
+                        orderId, EventType.INVENTORY)
+                .orElseThrow(() -> new BusinessException(ErrorCode.EVENT_NOT_FOUND));
+
+        // 2. Parse the items
+        Set<OrderItem> items = parseItemsFromPayload(originalEvent.getPayload());
+
+        // 3. Finalize: Reserved_Quantity ↓ (Available was already decreased)
+        for (OrderItem item : items) {
+            InventoryEntity inv = inventoryRepository.findById(item.productId())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.INVENTORY_NOT_FOUND, item.productId()));
+
+            inv.setReservedQuantity(inv.getReservedQuantity() - item.quantity());
+
+            inventoryRepository.save(inv);
+        }
+        log.info("Successfully committed stock for order {}", orderId);
+    }
+
+    private Set<OrderItem> parseItemsFromPayload(String payload) {
+        try {
+            return objectMapper.readValue(payload, new com.fasterxml.jackson.core.type.TypeReference<Set<OrderItem>>() {});
+        } catch (JsonProcessingException e) {
+            log.error("Critical: Failed to parse inventory payload: {}", payload);
+            throw new BusinessException(ErrorCode.INTERNAL_ERROR, "Invalid inventory payload data");
+        }
     }
 
 

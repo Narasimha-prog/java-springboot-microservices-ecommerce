@@ -14,5 +14,7 @@ public interface IInventoryService {
     InventoryDto getInventory(UUID productId);
     PageResponse<InventoryDto> getAllInventories(Pageable pageable);
     InventoryDto updateInventory(UUID productId, InventoryDto dto);
+    void releaseReservedStock(UUID orderId);
+    void commitStock(UUID orderId);
 
 }

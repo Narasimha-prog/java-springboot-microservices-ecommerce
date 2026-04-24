@@ -291,10 +291,9 @@ public class PaymentServiceImp implements IPaymentService {
 
 
         // Prevent duplicate verification
-        if (payment.getStatus() == PaymentStatus.SUCCESS
-                || payment.getStatus() == PaymentStatus.PENDING) {
-
-            throw new BusinessException(ErrorCode.PAYMENT_ALREADY_VERIFIED);
+        if (payment.getStatus() == PaymentStatus.SUCCESS) {
+            log.info("Payment for order {} was already verified via Webhook. Returning success.", payment.getOrderId());
+            return mapper.toResponse(payment); // Return the existing successful state
         }
 
         //verify signature
@@ -306,10 +305,10 @@ public class PaymentServiceImp implements IPaymentService {
 
         //sending event and update status
         if (isValid) {
-            payment.setStatus(PaymentStatus.PENDING);
+            payment.setStatus(PaymentStatus.SUCCESS);
             payment.setRazorpayPaymentId(request.razorpayPaymentId());
             paymentRepository.save(payment);
-            return new PaymentResponse("SUCCESS", "Payment verified is pending from webhook");
+            return new PaymentResponse("SUCCESS", "Payment verified successfully. Your order is being processed.");
         } else {
             payment.setStatus(PaymentStatus.FAILED);
             paymentRepository.save(payment);

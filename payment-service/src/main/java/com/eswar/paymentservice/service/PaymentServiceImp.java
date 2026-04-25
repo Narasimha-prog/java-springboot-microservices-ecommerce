@@ -116,7 +116,7 @@ public class PaymentServiceImp implements IPaymentService {
                 .map(existing -> {
                     log.info("Retry detected for event {}. Adding traceId {}.",
                             event.eventId(), event.traceId());
-                    existing.getTraceIds().add(event.traceId());
+                    existing.getTraceIds().add(UUID.randomUUID());
                     return eventRepository.save(existing);
                 })
                 .orElseGet(() -> {

@@ -106,8 +106,12 @@ public class OrderServiceImp implements IOrderService {
                 event.status(),
                 event.paymentReference()
         );
+  if(EventType.INVENTORY.equals(event.eventType())){
+      entity.setStatus(EventStatus.RECEIVED);
+  } else if (EventType.PAYMENT.equals(event.eventType())) {
+      entity.setStatus(EventStatus.PROCESSED);
+  }
 
-        entity.setStatus(EventStatus.PROCESSED);
         eventRepository.save(entity);
     }
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -311,7 +315,11 @@ public class OrderServiceImp implements IOrderService {
 
             case EventType.INVENTORY-> {
                 if (EventStatus.PROCESSED.equals(status)) {
-                    order.setStatus(OrderStatus.STOCK_RESERVED);
+                    if (order.getStatus() == OrderStatus.STOCK_RESERVED ) {
+                        order.setStatus(OrderStatus.CONFIRMED);
+                        order.setPaymentReference(paymentReference);
+                        log.info("Order {}: Payment successful. Order confirmed.", orderId);
+                    }
                 } else {
                     order.setStatus(OrderStatus.FAILED);
                 }

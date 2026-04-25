@@ -108,15 +108,13 @@ public class  InventoryServiceImp implements IInventoryService{
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public EventEntity recordReceipt(OrderCreatedEvent event) {
+        log.info("Retry detected for event {}.", event.eventId());
         return eventRepository.findById(event.eventId())
+
                 .map(existing -> {
-                    log.info("Retry detected for event {}. Generating NEW attempt ID.", event.eventId());
-                    // 🔹 Always add a fresh UUID to track THIS specific retry attempt
-                    boolean isNewTrace = existing.getTraceIds().add(event.traceId());
-                    if (!isNewTrace) {
-                        log.info("Duplicate traceId {} detected. Generating supplemental ID.", event.traceId());
-                        existing.getTraceIds().add(UUID.randomUUID());
-                    }
+
+                    UUID localAttemptId = UUID.randomUUID();
+                    existing.getTraceIds().add(localAttemptId);
                     return eventRepository.save(existing);
                 })
                 .orElseGet(() -> {

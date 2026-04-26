@@ -22,11 +22,14 @@ public class CartRestController {
 
     private final ICartService cartService;
 
+
     @GetMapping()
     @Operation(summary = "to get cart for user", description = "we can get cart using userid")
     public ResponseEntity<CartResponseDTO> getCart(@AuthenticationPrincipal String userId) {
         return ResponseEntity.ok(cartService.getCartByUserId(userId));
     }
+
+
 
     @PostMapping("/items")
     public ResponseEntity<CartResponseDTO> addItem(
@@ -47,6 +50,7 @@ public class CartRestController {
     @DeleteMapping()
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void clearCart(@AuthenticationPrincipal  String userId) {
+
         cartService.clearCart(userId);
     }
 

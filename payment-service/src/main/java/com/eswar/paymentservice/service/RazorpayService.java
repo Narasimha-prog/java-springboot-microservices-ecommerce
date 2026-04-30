@@ -20,7 +20,7 @@ import java.util.HexFormat;
 @Service
 @RequiredArgsConstructor
 @Profile("dev")
-public class RazorpayService {
+public class RazorpayService implements IPaymentGateway{
 
     private final RazorpayClient razorpayClient;
 
@@ -33,6 +33,7 @@ public class RazorpayService {
     /**
      * Step 1: Create an order in Razorpay systems.
      */
+    @Override
     public String createOrder(BigDecimal amount, String currency) throws RazorpayException {
         JSONObject options = new JSONObject();
         // Razorpay expects amount in subunits (e.g., Paise for INR)
@@ -47,6 +48,7 @@ public class RazorpayService {
     /**
      * Step 2: Verify the payment signature returned by the frontend Checkout UI.
      */
+    @Override
     public boolean verifySignature(String orderId, String paymentId, String signature) {
         try {
             String payload = orderId + "|" + paymentId;
@@ -66,9 +68,15 @@ public class RazorpayService {
     /**
      * Step 3: Verify Webhook authenticity.
      */
+    @Override
     public boolean verifyWebhookSignature(String payload, String signature) {
         String generated = generateHmacSha256(payload, webhookSecret);
         return MessageDigest.isEqual(generated.getBytes(), signature.getBytes());
+    }
+
+    @Override
+    public String getGatewayName() {
+        return "RAZORPAY";
     }
 
     private String generateHmacSha256(String data, String key) {

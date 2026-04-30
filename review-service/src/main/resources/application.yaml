@@ -1,3 +1,14 @@
 spring:
   application:
     name: review-service
+
+  devtools:
+    restart:
+      enabled: true
+    livereload:
+      enabled: true
+
+  profiles:
+    active: dev
+  config:
+    import: optional:configserver:http://localhost:8888

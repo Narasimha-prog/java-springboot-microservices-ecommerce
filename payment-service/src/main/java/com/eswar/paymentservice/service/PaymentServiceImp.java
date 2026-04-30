@@ -54,7 +54,7 @@ public class PaymentServiceImp implements IPaymentService {
     private final PaymentValidator validator;
     private final IPaymentRepository paymentRepository;
     private final PaymentEventProducer producer;
-    private final RazorpayService razorpayService;
+    private final IPaymentGateway razorpayService;
     private final IPaymentMapper mapper;
     private final IWebHookEventRepository webHookEventRepository;
     private final IEventRepository eventRepository;

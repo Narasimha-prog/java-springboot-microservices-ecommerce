@@ -15,7 +15,7 @@ public class OrderCreatedConsumer {
 
     private final INotificationService notificationService;
 
-    @KafkaListener(topics = "order-created", groupId = "payment-group-v1")
+    @KafkaListener(topics = "order-created", groupId = "notification-group-v1")
     public void consume(OrderCreatedEvent event, Acknowledgment acknowledgment) {
         log.info("Received order event: {}", event);
 

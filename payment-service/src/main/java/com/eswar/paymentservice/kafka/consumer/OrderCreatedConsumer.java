@@ -19,8 +19,6 @@ public class OrderCreatedConsumer {
     public void consume(OrderCreatedEvent event, Acknowledgment acknowledgment) {
         log.info("Received order event: {}", event);
 
-        paymentService.handleOrderCreatedEvent(event);
-
         try {
             // Call the Orchestrator
             paymentService.handleOrderCreatedEvent(event);

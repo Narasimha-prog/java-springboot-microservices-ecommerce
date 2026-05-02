@@ -10,6 +10,7 @@ public record OrderCreatedEvent(
         UUID eventId,
         UUID traceId,
         UUID orderId,
+        UUID customerId,
         Set<OrderItem> items
 ) {}
 

@@ -8,6 +8,7 @@ import java.util.UUID;
 public record OrderStatusEvent(
         UUID eventId,
         UUID orderId,
+        UUID customerId,
         EventType eventType,   // INVENTORY, PAYMENT
         EventStatus status,      // SUCCESS, FAILED
         String message  ,    // optional

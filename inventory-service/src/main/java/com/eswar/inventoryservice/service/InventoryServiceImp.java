@@ -63,7 +63,7 @@ public class  InventoryServiceImp implements IInventoryService{
         } catch (Exception ex) {
             log.warn("error while handling process inventory",ex);
             // Step D: Record Failure (Always Commits)
-            self.recordFailure(eventEntity, ex.getMessage());
+            self.recordFailure(eventEntity, ex.getMessage(),event.customerId());
         }
     }
 
@@ -91,19 +91,19 @@ public class  InventoryServiceImp implements IInventoryService{
         eventRepository.save(entity);
 
         // Success notification
-        kafkaService.sendOrderStatusEvent(entity, true, "Stock Reserved");
+        kafkaService.sendOrderStatusEvent(entity, true, "Stock Reserved",event.customerId());
     }
 
     //for failure
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void recordFailure(EventEntity entity, String error) {
+    public void recordFailure(EventEntity entity, String error,UUID  customerId) {
 
         entity.setStatus(EventStatus.FAILED);
         entity.setErrorMessage(error);
         eventRepository.save(entity);
 
         // Failure notification
-        kafkaService.sendOrderStatusEvent(entity, false, error);
+        kafkaService.sendOrderStatusEvent(entity, false, error,customerId);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)

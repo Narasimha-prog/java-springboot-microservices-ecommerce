@@ -25,13 +25,14 @@ public class InventoryKafkaService {
 
   private final InventoryEventProducer inventoryEventProducer;
 
-    public void sendOrderStatusEvent(EventEntity entity, boolean reserved, String message) {
+    public void sendOrderStatusEvent(EventEntity entity, boolean reserved, String message,UUID customerId) {
 
         EventStatus status = reserved ? EventStatus.PROCESSED : EventStatus.FAILED;
 
         OrderStatusEvent statusEvent = new OrderStatusEvent(
                 entity.getEventId(),
                 entity.getOrderId(),      // orderId
+                customerId,
                 EventType.INVENTORY,       // type INVENTORY
                 status,                    // SUCCESS or FAILED
                 message                    // optional message

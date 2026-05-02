@@ -54,7 +54,7 @@ public class PaymentServiceImp implements IPaymentService {
     private final PaymentValidator validator;
     private final IPaymentRepository paymentRepository;
     private final PaymentEventProducer producer;
-    private final IPaymentGateway razorpayService;
+    private final IPaymentGateway gateWayService;
     private final IPaymentMapper mapper;
     private final IWebHookEventRepository webHookEventRepository;
     private final IEventRepository eventRepository;
@@ -161,7 +161,7 @@ public class PaymentServiceImp implements IPaymentService {
         }
     }
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void processWebhookBusinessLogic(JSONObject eventJson, WebhookEventEntity webhookEvent) {
+    public void processWebhookBusinessLogic(JSONObject eventJson, WebhookEventEntity webhookEvent,UUID customerId) {
         // Extract Order ID from payload
         String razorpayOrderId = eventJson.getJSONObject("payload")
                 .getJSONObject("payment")
@@ -193,11 +193,11 @@ public class PaymentServiceImp implements IPaymentService {
             }
             payment.setStatus(PaymentStatus.SUCCESS);
             webhookEvent.setStatus(WebhookStatus.PROCESSED);
-            paymentKafkaService.sendOrderStatusEvent(originalEvent, EventStatus.PROCESSED, "Payment is success", payment.getRazorpayPaymentId());
+            paymentKafkaService.sendOrderStatusEvent(originalEvent, EventStatus.PROCESSED, "Payment is success", payment.getRazorpayPaymentId(),customerId);
         }
         else if ("payment.failed".equals(eventType)) {
             payment.setStatus(PaymentStatus.FAILED);
-            paymentKafkaService.sendOrderStatusEvent(originalEvent, EventStatus.FAILED, "Payment is failed", null);
+            paymentKafkaService.sendOrderStatusEvent(originalEvent, EventStatus.FAILED, "Payment is failed", null,customerId);
         }
 
         // 3. Update Statuses
@@ -259,7 +259,7 @@ public class PaymentServiceImp implements IPaymentService {
         //get order id from razorpay
         String razorpayOrderId;
         try {
-             razorpayOrderId = razorpayService.createOrder(payment.getAmount(), currency);
+             razorpayOrderId = gateWayService.createOrder(payment.getAmount(), currency);
         } catch (RazorpayException ex) {
             log.error("Razorpay service failed for order {}", orderId, ex);
             throw new BusinessException(ErrorCode.PAYMENT_SERVICE_UNAVAILABLE);
@@ -297,7 +297,7 @@ public class PaymentServiceImp implements IPaymentService {
         }
 
         //verify signature
-        boolean isValid = razorpayService.verifySignature(
+        boolean isValid = gateWayService.verifySignature(
                 request.razorpayOrderId(),
                 request.razorpayPaymentId(),
                 request.razorpaySignature()
@@ -385,7 +385,7 @@ public class PaymentServiceImp implements IPaymentService {
     public void handleWebhook(String payload, String signature) {
         // 1. Validate & Verify (No DB state yet)
         validator.validateWebhook(payload, signature);
-        if (!razorpayService.verifyWebhookSignature(payload, signature)) {
+        if (!gateWayService.verifyWebhookSignature(payload, signature)) {
             throw new BusinessException(ErrorCode.INVALID_WEBHOOK_SIGNATURE);
         }
 
@@ -417,7 +417,7 @@ public class PaymentServiceImp implements IPaymentService {
 
         try {
             // 4. Step C: Apply Business Logic & Notify Kafka (Independent Transaction)
-            self.processWebhookBusinessLogic(eventJson, webhookEvent);
+            self.processWebhookBusinessLogic(eventJson, webhookEvent,payment.getUserId());
         } catch (Exception ex) {
             // 5. Step D: Record failure
             eventRepository.findFirstByOrderIdAndEventTypeOrderByCreatedAtDesc(

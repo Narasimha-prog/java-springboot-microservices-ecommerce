@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -18,13 +20,14 @@ public class PaymentKafkaService {
 
   private final PaymentEventProducer paymentEventProducer;
 
-    public void sendOrderStatusEvent(EventEntity entity,EventStatus status, String message,String paymentRef) {
+    public void sendOrderStatusEvent(EventEntity entity, EventStatus status, String message, String paymentRef, UUID customerId) {
 
 
 
         OrderStatusEvent statusEvent = new OrderStatusEvent(
                 entity.getEventId(),
                 entity.getOrderId(),      // orderId
+                customerId,
                 EventType.PAYMENT,       // type INVENTORY
                 status,                    // SUCCESS or FAILED
                 message   ,                 // optional message

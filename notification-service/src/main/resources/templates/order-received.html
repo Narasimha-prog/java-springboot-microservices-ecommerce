@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+        .wrapper { width: 100%; table-layout: fixed; background-color: #f4f4f4; padding-bottom: 40px; }
+        .main { background-color: #ffffff; margin: 0 auto; width: 100%; max-width: 600px; border-spacing: 0; color: #4a4a4a; border-radius: 8px; overflow: hidden; }
+        .header { background-color: #34495e; color: #ffffff; padding: 20px; text-align: center; }
+        .content { padding: 30px; line-height: 1.6; }
+        .order-summary { background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px; padding: 20px; margin: 20px 0; }
+        .footer { text-align: center; font-size: 12px; color: #888888; padding: 20px; }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <table class="main">
+        <tr>
+            <td class="header">
+                <h1>Order Received</h1>
+            </td>
+        </tr>
+        <tr>
+            <td class="content">
+                <p>Hello <strong th:text="${name}">Customer</strong>,</p>
+                <p>We've received your order <strong>#[[${orderId}]]</strong>! We are currently waiting for payment confirmation from our gateway.</p>
+
+                <div class="order-summary">
+                    <p><strong>Total Amount:</strong> ₹<span th:text="${totalAmount}">0.00</span></p>
+                    <p><strong>Items:</strong></p>
+                    <ul>
+                        <li th:each="item : ${items}">
+                            Quantity: <span th:text="${item.quantity}">1</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <p>Don't worry, we'll notify you as soon as the payment is processed.</p>
+            </td>
+        </tr>
+        <tr>
+            <td class="footer">
+                &copy; 2026 Sitamahalakshmi E-Commerce
+            </td>
+        </tr>
+    </table>
+</div>
+</body>
+</html>

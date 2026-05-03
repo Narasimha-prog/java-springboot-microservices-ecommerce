@@ -6,6 +6,9 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.index.Indexed;
+
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.time.Instant;
 
@@ -28,6 +31,8 @@ public class ReviewDocument {
     private UUID userId;
 
     private String userFullName;
+
+    private List<String> imageUrls;
 
     private int rating;
 

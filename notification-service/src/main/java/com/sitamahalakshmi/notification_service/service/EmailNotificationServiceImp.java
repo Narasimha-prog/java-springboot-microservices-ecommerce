@@ -1,9 +1,11 @@
 package com.sitamahalakshmi.notification_service.service;
-
+import  com.eswar.grpc.user.UserResponse;
 import com.sitamahalakshmi.notification_service.grpc.client.GrpcUserServiceClient;
+import com.sitamahalakshmi.notification_service.grpc.mapper.GrpcExceptionMapper;
 import com.sitamahalakshmi.notification_service.kafka.constatnts.EventStatus;
 import com.sitamahalakshmi.notification_service.kafka.events.OrderCreatedEvent;
 import com.sitamahalakshmi.notification_service.kafka.events.OrderStatusEvent;
+import io.grpc.StatusRuntimeException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,8 +35,13 @@ public class EmailNotificationServiceImp implements INotificationService{
         log.info("📧 Handling Order Created for ID: {}", event.orderId());
 
         // 1. Fetch User details via gRPC
-        var user = userServiceClient.getUserById(event.customerId().toString());
-
+       UserResponse user;
+        try {
+            user = userServiceClient.getUserById(event.customerId().toString());
+        } catch (StatusRuntimeException ex) {
+            log.warn("gRPC error during fetching user data", ex);
+            throw GrpcExceptionMapper.map(ex);
+        }
         // 2. Prepare Context
         Context context = new Context();
         context.setVariable("name", user.getName());
@@ -53,7 +60,13 @@ public class EmailNotificationServiceImp implements INotificationService{
         log.info("🔄 Handling Status Update: {} - {}", event.eventType(), event.status());
 
         // 1. Fetch user (Assuming customerId is available or fetched via orderId)
-        var user = userServiceClient.getUserById(event.customerId().toString());
+        UserResponse user;
+        try {
+            user = userServiceClient.getUserById(event.customerId().toString());
+        } catch (StatusRuntimeException ex) {
+            log.warn("gRPC error during fetching user data", ex);
+            throw GrpcExceptionMapper.map(ex);
+        }
 
         Context context = new Context();
         context.setVariable("name", user.getName());
@@ -101,11 +114,12 @@ public class EmailNotificationServiceImp implements INotificationService{
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(htmlContent, true);
+            helper.setFrom("lakshminarasimhareddy2001@gmail.com");
 
             mailSender.send(message);
             log.info("✅ Email sent successfully to {}", to);
         } catch (Exception e) {
-            log.error("❌ Failed to send email to {}: {}", to, e.getMessage());
+            log.error("❌ Failed to send email to {}",to, e);
         }
     }
 }

@@ -5,11 +5,13 @@ import com.eswar.grpc.user.UserIdRequest;
 import com.eswar.grpc.user.UserResponse;
 import com.eswar.grpc.user.UserServiceGrpc;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class GrpcUserServiceClient {
 
     @GrpcClient("user-service")
@@ -25,6 +27,7 @@ public class GrpcUserServiceClient {
     }
 
     public UserResponse getUserById(String id) {
+        log.info("calling user-service for User Info {}",id);
         UserIdRequest request = UserIdRequest.newBuilder()
                 .setId(id)
                 .build();

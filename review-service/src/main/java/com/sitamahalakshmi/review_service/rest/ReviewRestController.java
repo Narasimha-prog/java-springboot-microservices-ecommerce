@@ -2,9 +2,11 @@ package com.sitamahalakshmi.review_service.rest;
 
 
 import com.sitamahalakshmi.review_service.dto.ReviewRequestDto;
-import com.sitamahalakshmi.review_service.entity.ReviewDocument;
+import com.sitamahalakshmi.review_service.dto.ReviewResponseDto;
 import com.sitamahalakshmi.review_service.service.IReviewService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,24 +30,26 @@ public class ReviewRestController {
 
     @Operation(summary = "Post a new review")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ReviewDocument> createReview(@RequestPart("review") ReviewRequestDto dto,
-                                                       @RequestPart("files") List<MultipartFile> files) {
+    public ResponseEntity<ReviewResponseDto> createReview(
+            @Parameter(content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+            @RequestPart("review") ReviewRequestDto dto,
+            @RequestPart("files") List<MultipartFile> files) {
         return new ResponseEntity<>(reviewService.saveReview(dto,files), HttpStatus.CREATED);
     }
 
     // 2. READ (By Product)
     @GetMapping("/product/{productId}")
     @Operation(summary = "Get reviews for a product")
-    public ResponseEntity<List<ReviewDocument>> getReviewsByProduct(@PathVariable String productId) {
+    public ResponseEntity<List<ReviewResponseDto>> getReviewsByProduct(@PathVariable UUID productId) {
         return ResponseEntity.ok(reviewService.getReviewsByProductId(productId));
     }
 
     // 3. UPDATE
     @PutMapping("/{id}")
     @Operation(summary = "Edit an existing review")
-    public ResponseEntity<ReviewDocument> updateReview(
-            @PathVariable String id,
-            @RequestBody ReviewDocument reviewDetails) {
+    public ResponseEntity<ReviewResponseDto> updateReview(
+            @PathVariable UUID id,
+            @RequestBody ReviewRequestDto reviewDetails) {
         return ResponseEntity.ok(reviewService.updateReview(id, reviewDetails));
     }
 

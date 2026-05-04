@@ -19,7 +19,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class ReviewDocument {
+public class ReviewEntity {
 
     @Id
     private String id; // MongoDB's internal ID (usually a String or ObjectId)
@@ -37,6 +37,8 @@ public class ReviewDocument {
     private int rating;
 
     private String comment;
+
+    private List<ReviewImageEntity> images;
 
     @CreatedDate
     private Instant createdAt;

@@ -21,6 +21,8 @@ public class ReviewServiceImp implements IReviewService {
 
     private final IReviewRepository reviewRepository;
     private final ReviewMapper reviewMapper;
+
+    private final IStorageService storageService;
     // private final FileStorageService fileStorageService; // You'll need a service to save physical files
 
     @Override
@@ -28,17 +30,19 @@ public class ReviewServiceImp implements IReviewService {
         // 1. Convert DTO to Entity
         ReviewEntity review = reviewMapper.toEntity(reviewDto);
         review.setCreatedAt(Instant.now());
-
+        review.setUpdatedAt(Instant.now());
         // 2. Process Files (Logic depends on your File Storage implementation)
         if (files != null && !files.isEmpty()) {
+
+
             List<ReviewImageEntity> images = files.stream().map(file -> {
-                // This is where you'd call your S3/Local storage logic
-                // String storageKey = fileStorageService.save(file);
+
+                String savedFilePath = storageService.upload(file, "reviews");
                 return ReviewImageEntity.builder()
                         .fileName(file.getOriginalFilename())
                         .mimeType(file.getContentType())
                         .fileSize(file.getSize())
-                        .storageKey("placeholder-key-" + UUID.randomUUID()) // Replace with actual key from storage
+                        .storageKey(savedFilePath)
                         .build();
             }).collect(Collectors.toList());
 

@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 public record ReviewResponseDto(
-        UUID id,
+        String id,
         UUID productId,
         UUID userId,
         int rating,

@@ -5,6 +5,8 @@ import com.eswar.productservice.constatnts.ProductStatus;
 import com.eswar.productservice.dto.*;
 import com.eswar.productservice.entity.*;
 import com.eswar.productservice.exception.*;
+import com.eswar.productservice.kafka.event.ProductCreatedEvent;
+import com.eswar.productservice.kafka.producer.ProductEventProducer;
 import com.eswar.productservice.mapper.ProductMapper;
 import com.eswar.productservice.repository.*;
 import com.eswar.productservice.util.PagedUtils;
@@ -29,7 +31,7 @@ public class ProductServiceImpl implements IProductService {
     private final ICategoryRepository categoryRepository;
     private final ProductMapper mapper;
     private final IStorageService storageService;
-
+    private final ProductEventProducer productEventProducer;
 
     @Override
     @Transactional
@@ -80,7 +82,22 @@ public class ProductServiceImpl implements IProductService {
 
         // 4. Save (CascadeType.ALL will save pictures automatically)
         ProductEntity saved = productRepository.save(product);
+        try {
+            ProductCreatedEvent domainEvent = new ProductCreatedEvent(
+                    UUID.randomUUID(), // Core correlation eventId
+                    null,              // TraceId generated inside producer
+                    saved.getId(),
+                    saved.getSku(),
+                    saved.getName(),
+                    saved.getDescription(),
+                    saved.getPrice(),
+                    saved.getCategory().getName()
+            );
 
+            productEventProducer.sendProductCreatedEvent(domainEvent);
+        } catch (Exception e) {
+            log.error("Failed to broadcast product creation message for ID: {}", saved.getId(), e);
+        }
         return mapper.toResponse(saved);
     }
     @Override

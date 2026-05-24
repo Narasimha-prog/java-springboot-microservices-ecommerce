@@ -12,6 +12,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,6 +41,7 @@ import java.util.Objects;
 		bearerFormat = "JWT",           // Optional, shows "JWT" in Swagger UI
 		in = SecuritySchemeIn.HEADER    // Token passed in header
 )
+@EnableScheduling
 public class ProductServiceApplication {
 
 	public static void main(String[] args) {

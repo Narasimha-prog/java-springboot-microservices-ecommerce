@@ -1,5 +1,6 @@
 package com.eswar.productservice.service;
 
+import com.eswar.productservice.constatnts.EventStatus;
 import com.eswar.productservice.constatnts.ProductSize;
 import com.eswar.productservice.constatnts.ProductStatus;
 import com.eswar.productservice.dto.*;
@@ -10,15 +11,18 @@ import com.eswar.productservice.kafka.producer.ProductEventProducer;
 import com.eswar.productservice.mapper.ProductMapper;
 import com.eswar.productservice.repository.*;
 import com.eswar.productservice.util.PagedUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,12 +30,13 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 public class ProductServiceImpl implements IProductService {
-
+    private final ObjectMapper objectMapper;
     private final IProductRepository productRepository;
     private final ICategoryRepository categoryRepository;
     private final ProductMapper mapper;
     private final IStorageService storageService;
-    private final ProductEventProducer productEventProducer;
+    private final IProductCreatedEventRepository  eventRepository;
+
 
     @Override
     @Transactional
@@ -94,7 +99,17 @@ public class ProductServiceImpl implements IProductService {
                     saved.getCategory().getName()
             );
 
-            productEventProducer.sendProductCreatedEvent(domainEvent);
+            ProductCreatedEventEntity outboxRecord = ProductCreatedEventEntity.builder()
+                    .id(UUID.randomUUID())
+                    .topic("product-created")
+                    .partitionKey(saved.getId().toString()) // Product ID ensures partition matching stability
+                    .payload(objectMapper.writeValueAsString(domainEvent))
+                    .status(EventStatus.RECEIVED)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+
+            eventRepository.save(outboxRecord);
+            log.info("Staged ProductCreatedEvent into database outbox for SKU: {}", saved.getSku());
         } catch (Exception e) {
             log.error("Failed to broadcast product creation message for ID: {}", saved.getId(), e);
         }

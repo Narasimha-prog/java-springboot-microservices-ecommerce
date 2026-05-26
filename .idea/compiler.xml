@@ -78,7 +78,7 @@
         </processorPath>
         <module name="promotion-service" />
       </profile>
-      <profile name="Annotation profile for product-service" enabled="true">
+      <profile name="Annotation profile for inventory-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -88,9 +88,9 @@
         </processorPath>
         <module name="product-service" />
         <module name="authentication-service" />
+        <module name="inventory-service" />
         <module name="user-service" />
         <module name="order-service" />
-        <module name="inventory-service" />
       </profile>
     </annotationProcessing>
   </component>

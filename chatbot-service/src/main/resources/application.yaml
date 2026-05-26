@@ -6,3 +6,10 @@ spring:
     active: dev
   config:
     import: optional:configserver:http://localhost:8888
+
+
+logging:
+  level:
+    org.springframework.ai: DEBUG
+    org.springframework.web.client: DEBUG
+    httpclient.wire: DEBUG

@@ -5,6 +5,7 @@ import com.srinu.chatbot_service.kafka.event.ProductCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.document.Document;
+import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.RestClient;
@@ -49,5 +50,14 @@ public class ChromaVectorRepository {
 
         vectorStore.add(List.of(document));
     }
+    public List<Document> searchSimilarDocuments(String queryText, int topK) {
+        log.info("Executing similarity search against vector store for query: {}", queryText);
 
+        SearchRequest searchRequest = SearchRequest.builder()
+                .query(queryText)
+                .topK(topK)
+                .build();
+
+        return vectorStore.similaritySearch(searchRequest);
+    }
 }

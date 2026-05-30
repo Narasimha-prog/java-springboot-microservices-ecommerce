@@ -11,16 +11,18 @@ import com.srinu.chatbot_service.repository.IProductEventRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
+import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.document.Document;
+import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +32,7 @@ public class ChatBotServiceImpl implements IChatBotService {
     private final ObjectMapper objectMapper;
     private final IProductEventRepository eventRepository;
     private final ChromaVectorRepository chromaVectorRepository;
+    private final ChatModel chatModel;
     // Inject your ChromaDB vector interaction layer here when ready:
     // private final IChromaVectorRepository chromaVectorRepository;
 
@@ -129,4 +132,44 @@ public class ChatBotServiceImpl implements IChatBotService {
 
         log.info("Failure operational flag successfully written to disk for database tracking.");
     }
+
+    @Override
+    public String chatWithKnowledgeBase(String userMessage) {
+        log.info("Received user chat query: {}", userMessage);
+
+        try {
+            // 🚀 Call the clean repository method wrapper we just created
+            List<Document> similarDocuments = chromaVectorRepository.searchSimilarDocuments(userMessage, 3);
+
+            // Extract and concatenate text contents
+            String vectorContext = similarDocuments.stream()
+                    .map(Document::getText)
+                    .collect(Collectors.joining("\n"));
+
+            log.info("Retrieved {} relevant context blocks from vector store.", similarDocuments.size());
+
+            // Build a structured prompt augmenting the user message with the retrieved context
+            String systemPromptText = """
+                    You are an advanced E-Commerce Assistant. Use the following context details from our product catalog 
+                    to accurately answer the user's request. If the answer cannot be found in the context, politely 
+                    inform the user that you don't have that product detail right now.
+                    
+                    CONTEXT DATA:
+                    %s
+                    
+                    USER QUESTION:
+                    %s
+                    
+                    ANSWER:
+                    """.formatted(vectorContext, userMessage);
+
+            Prompt prompt = new Prompt(systemPromptText);
+            return Objects.requireNonNull(chatModel.call(prompt).getResult()).getOutput().getText();
+
+        } catch (Exception e) {
+            log.error("Failed to execute RAG retrieval flow for user message", e);
+            return "I'm having trouble connecting to my knowledge base right now. Please try again shortly!";
+        }
+    }
+
 }

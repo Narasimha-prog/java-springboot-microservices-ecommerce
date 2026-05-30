@@ -1,6 +1,13 @@
 package com.srinu.chatbot_service;
 
 import io.github.cdimascio.dotenv.Dotenv;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
+import io.swagger.v3.oas.annotations.servers.Server;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.core.env.MapPropertySource;
@@ -12,6 +19,20 @@ import java.util.Objects;
 
 @SpringBootApplication
 @EnableJpaAuditing
+@OpenAPIDefinition(
+		info = @Info(title = "ChatBot Service API", version = "1.0.0"),
+		servers = {
+				@Server(
+						description = "API Gateway",
+						url = "http://localhost:8080"
+				),
+				@Server(
+						description = "API Inventory Service",
+						url = "http://localhost:9999"
+				)
+		}
+)
+
 public class ChatbotServiceApplication {
 
 	public static void main(String[] args) {

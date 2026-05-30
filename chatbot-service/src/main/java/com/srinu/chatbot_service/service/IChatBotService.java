@@ -5,4 +5,6 @@ import org.jspecify.annotations.NonNull;
 
 public interface IChatBotService {
     void handleProductCreatedEvent(@NonNull ProductCreatedEvent event);
+
+    String chatWithKnowledgeBase(String userMessage);
 }

@@ -11,18 +11,6 @@ services:
       - ALLOW_RESET=TRUE
     restart: always
 
-#  mongodb:
-#    image: mongo:latest
-#    container_name: mongodb
-#    command: [ "--wiredTigerCacheSizeGB", "0.25" ] # Limit cache to 250MB
-#    deploy:
-#        resources:
-#          limits:
-#            memory: 512M # Limit total container memory
-#    ports:
-#      - "27017:27017"
-#    volumes:
-#      - mongo_data:/data/db
   postgres:
     image: postgres:latest
     container_name: ecommerce_db

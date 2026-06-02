@@ -31,3 +31,16 @@ management:
       show-details: always
 server:
   port: 8888
+
+---
+# 🌟 DOCKER PROFILE OVERRIDES
+# This section only activates when SPRING_PROFILES_ACTIVE=docker
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://register-server:8761/eureka/ # 🚀 Routes cleanly using Docker container hostnames!

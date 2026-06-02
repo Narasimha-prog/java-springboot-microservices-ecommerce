@@ -1,4 +1,48 @@
 services:
+  register-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE_NAME: register-server
+    ports:
+      - "8761:8761"
+    networks:
+      - backend
+  config-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE_NAME: config-server
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    ports:
+      - "8888:8888"
+    networks:
+      - backend
+    depends_on:
+      - register-server
+  chatbot-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE_NAME: chatbot-service
+    ports:
+      - "9999:9999"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # 🌟 Required for Linux containers to find your host machine's ports
+    networks:
+      - backend
+    depends_on:
+      - register-server
+      - config-server
+      - chromadb
+      - postgres
+
   chromadb:
     image: chromadb/chroma:latest
     container_name: standalone-chromadb

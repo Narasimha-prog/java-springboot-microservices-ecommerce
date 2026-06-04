@@ -16,13 +16,200 @@ services:
       args:
         MODULE_NAME: config-server
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_PROFILES_ACTIVE=git,docker
     ports:
       - "8888:8888"
     networks:
       - backend
     depends_on:
       - register-server
+  user-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE_NAME: user-service
+    ports:
+      - "8081:8081"
+    env_file:
+      - .env
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - backend
+    depends_on:
+      - register-server
+      - config-server
+
+
+  authentication-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE_NAME: authentication-service
+    ports:
+      - "8082:8082"
+    env_file:
+      - .env
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - backend
+    depends_on:
+      - register-server
+      - config-server
+
+  product-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE_NAME: product-service
+    ports:
+      - "8083:8083"
+
+    env_file:
+      - .env
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - backend
+    depends_on:
+      - register-server
+      - config-server
+
+
+
+  inventory-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE_NAME: inventory-service
+    ports:
+      - "8085:8085"
+    env_file:
+      - .env
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - backend
+    depends_on:
+      - register-server
+      - config-server
+
+
+  gateway-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE_NAME: gateway-service
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - backend
+    depends_on:
+      - register-server
+      - config-server
+
+  swagger-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE_NAME: swagger-service
+    ports:
+      - "7777:7777"
+    env_file:
+      - .env
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - backend
+    depends_on:
+
+      - register-server
+      - config-server
+
+  review-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE_NAME: review-service
+    ports:
+      - "8089:8089"
+    env_file:
+      - .env
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - backend
+    depends_on:
+
+      - register-server
+      - config-server
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE_NAME: payment-service
+    ports:
+      - "8086:8086"
+    env_file:
+      - .env
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - backend
+    depends_on:
+
+      - register-server
+      - config-server
+  order-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE_NAME: order-service
+    ports:
+      - "8084:8084"
+    env_file:
+      - .env
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - backend
+    depends_on:
+
+      - register-server
+      - config-server
+  notification-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE_NAME: notification-service
+    ports:
+      - "8088:8088"
+    env_file:
+      - .env
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - backend
+    depends_on:
+
+      - register-server
+      - config-server
   chatbot-service:
     build:
       context: .
@@ -31,6 +218,8 @@ services:
         MODULE_NAME: chatbot-service
     ports:
       - "9999:9999"
+    env_file:
+      - .env
     environment:
       - SPRING_PROFILES_ACTIVE=docker
     extra_hosts:
@@ -48,6 +237,8 @@ services:
     container_name: standalone-chromadb
     ports:
       - "8000:8000"
+    networks:
+      - backend
     volumes:
       - chroma-data:/chroma/chroma
     environment:

@@ -12,3 +12,15 @@ spring:
     active: dev
   config:
     import: optional:configserver:http://localhost:8888
+
+
+
+
+---
+#  DOCKER CONTAINER NETWORK OVERRIDES
+spring:
+  config:
+    activate:
+      on-profile: docker
+    # Tells the container to find the config server via its container mesh name
+    import: optional:configserver:http://config-server:8888

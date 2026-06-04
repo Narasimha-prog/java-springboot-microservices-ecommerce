@@ -1,6 +1,5 @@
-# =========================================================================
-# STAGE 1: Build using the root directory context
-# =========================================================================
+#stage 1
+
 FROM maven:3.9.6-eclipse-temurin-21 AS builder
 
 
@@ -20,9 +19,7 @@ RUN cd ${MODULE_NAME} && mvn dependency:go-offline -B || true
 COPY ${MODULE_NAME}/src/ ./${MODULE_NAME}/src/
 RUN cd ${MODULE_NAME} && mvn clean package -DskipTests
 
-# =========================================================================
-# STAGE 2: Lightweight JRE target runtime
-# =========================================================================
+#stage 2
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 

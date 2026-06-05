@@ -5,7 +5,7 @@ on:
     branches:
       - main
       - master
-    # 🚀 Only trigger the pipeline if code changes inside a service folder or the core contracts
+    #only trigger the pipeline if code changes inside a service folder or the core contracts
     paths:
       - 'authentication-service/**'
       - 'order-service/**'
@@ -61,9 +61,7 @@ jobs:
           - service_name: chatbot-service
             should_run: ${{ needs.changes.outputs.chatbot == 'true' }}
 
-    # Only run the matrix block if changes were detected for that specific service
-    if: ${{ matrix.should_run == 'true' }}
-
+    
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -75,7 +73,7 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      # 📦 CRITICAL: Install your shared proto contracts to the runner's local .m2 repo first!
+      # Install your shared proto contracts to the runner's local .m2 repo first!
       - name: Build and Install Shared gRPC Contracts
         run: |
           cd grpc-contract
@@ -90,7 +88,7 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-      # 🚀 Build and Push using our standardized multi-stage Dockerfiles
+       #build and Push using our standardized multi-stage Dockerfiles
       - name: Build and Push Image
         uses: docker/build-push-action@v5
         with:

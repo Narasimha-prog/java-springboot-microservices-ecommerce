@@ -1,0 +1,106 @@
+name: Build and Push Microservices to Docker Hub
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    # 🚀 Only trigger the pipeline if code changes inside a service folder or the core contracts
+    paths:
+      - 'authentication-service/**'
+      - 'order-service/**'
+      - 'product-service/**'
+      - 'inventory-service/**'
+      - 'chatbot-service/**'
+      - 'grpc-contract/**'
+      - '.github/workflows/deploy-services.yml'
+
+jobs:
+  changes:
+    name: Detect Changed Services
+    runs-on: ubuntu-latest
+    outputs:
+      authentication: ${{ steps.filter.outputs.authentication }}
+      order: ${{ steps.filter.outputs.order }}
+      product: ${{ steps.filter.outputs.product }}
+      inventory: ${{ steps.filter.outputs.inventory }}
+      chatbot: ${{ steps.filter.outputs.chatbot }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Paths Filter Check
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            authentication: ['authentication-service/**', 'grpc-contract/**']
+            order: ['order-service/**', 'grpc-contract/**']
+            product: ['product-service/**', 'grpc-contract/**']
+            inventory: ['inventory-service/**', 'grpc-contract/**']
+            chatbot: ['chatbot-service/**', 'grpc-contract/**']
+
+  build-and-push:
+    name: Build and Push Service Images
+    needs: changes
+    runs-on: ubuntu-latest
+    
+    # Define a clean build matrix strategy
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service_name: authentication-service
+            should_run: ${{ needs.changes.outputs.authentication == 'true' }}
+          - service_name: order-service
+            should_run: ${{ needs.changes.outputs.order == 'true' }}
+          - service_name: product-service
+            should_run: ${{ needs.changes.outputs.product == 'true' }}
+          - service_name: inventory-service
+            should_run: ${{ needs.changes.outputs.inventory == 'true' }}
+          - service_name: chatbot-service
+            should_run: ${{ needs.changes.outputs.chatbot == 'true' }}
+
+    # Only run the matrix block if changes were detected for that specific service
+    if: ${{ matrix.should_run == 'true' }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      # 📦 CRITICAL: Install your shared proto contracts to the runner's local .m2 repo first!
+      - name: Build and Install Shared gRPC Contracts
+        run: |
+          cd grpc-contract
+          mvn clean install -DskipTests
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      # 🚀 Build and Push using our standardized multi-stage Dockerfiles
+      - name: Build and Push Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./${{ matrix.service_name }}/Dockerfile
+          build-args: |
+            MODULE_NAME=${{ matrix.service_name }}
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_HUB_USERNAME }}/${{ matrix.service_name }}:latest
+            ${{ secrets.DOCKER_HUB_USERNAME }}/${{ matrix.service_name }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

@@ -5,7 +5,6 @@ on:
     branches:
       - main
       - master
-    #only trigger the pipeline if code changes inside a service folder or the core contracts
     paths:
       - 'authentication-service/**'
       - 'order-service/**'
@@ -15,16 +14,16 @@ on:
       - 'grpc-contract/**'
       - '.github/workflows/deploy-services.yml'
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
+  # JOB 1: Dynamic Scanner
   changes:
     name: Detect Changed Services
     runs-on: ubuntu-latest
     outputs:
-      authentication: ${{ steps.filter.outputs.authentication }}
-      order: ${{ steps.filter.outputs.order }}
-      product: ${{ steps.filter.outputs.product }}
-      inventory: ${{ steps.filter.outputs.inventory }}
-      chatbot: ${{ steps.filter.outputs.chatbot }}
+      active_services: ${{ steps.set-matrix.outputs.services }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -34,34 +33,37 @@ jobs:
         uses: dorny/paths-filter@v3
         with:
           filters: |
-            authentication: ['authentication-service/**', 'grpc-contract/**']
-            order: ['order-service/**', 'grpc-contract/**']
-            product: ['product-service/**', 'grpc-contract/**']
-            inventory: ['inventory-service/**', 'grpc-contract/**']
-            chatbot: ['chatbot-service/**', 'grpc-contract/**']
+            authentication-service: ['authentication-service/**', 'grpc-contract/**', '.github/workflows/deploy-services.yml']
+            order-service: ['order-service/**', 'grpc-contract/**', '.github/workflows/deploy-services.yml']
+            product-service: ['product-service/**', 'grpc-contract/**', '.github/workflows/deploy-services.yml']
+            inventory-service: ['inventory-service/**', 'grpc-contract/**', '.github/workflows/deploy-services.yml']
+            chatbot-service: ['chatbot-service/**', 'grpc-contract/**', '.github/workflows/deploy-services.yml']
 
+      - name: Generate Active Services Matrix Array
+        id: set-matrix
+        run: |
+          SERVICES=()
+          if [ "${{ steps.filter.outputs.authentication-service }}" = "true" ]; then SERVICES+=('"authentication-service"'); fi
+          if [ "${{ steps.filter.outputs.order-service }}" = "true" ]; then SERVICES+=('"order-service"'); fi
+          if [ "${{ steps.filter.outputs.product-service }}" = "true" ]; then SERVICES+=('"product-service"'); fi
+          if [ "${{ steps.filter.outputs.inventory-service }}" = "true" ]; then SERVICES+=('"inventory-service"'); fi
+          if [ "${{ steps.filter.outputs.chatbot-service }}" = "true" ]; then SERVICES+=('"chatbot-service"'); fi
+          
+          JSON_ARRAY=$(IFS=,; echo "[${SERVICES[*]}]")
+          echo "services=$JSON_ARRAY" >> $GITHUB_OUTPUT
+
+  # JOB 2: Heavy-Lifting Dynamic Builder
   build-and-push:
-    name: Build and Push Service Images
+    name: Build
     needs: changes
+    if: ${{ needs.changes.outputs.active_services != '[]' && needs.changes.outputs.active_services != '' }}
     runs-on: ubuntu-latest
     
-    # Define a clean build matrix strategy
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - service_name: authentication-service
-            should_run: ${{ needs.changes.outputs.authentication == 'true' }}
-          - service_name: order-service
-            should_run: ${{ needs.changes.outputs.order == 'true' }}
-          - service_name: product-service
-            should_run: ${{ needs.changes.outputs.product == 'true' }}
-          - service_name: inventory-service
-            should_run: ${{ needs.changes.outputs.inventory == 'true' }}
-          - service_name: chatbot-service
-            should_run: ${{ needs.changes.outputs.chatbot == 'true' }}
+        service_name: ${{ fromJson(needs.changes.outputs.active_services) }}
 
-    
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -73,7 +75,6 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      # Install your shared proto contracts to the runner's local .m2 repo first!
       - name: Build and Install Shared gRPC Contracts
         run: |
           cd grpc-contract
@@ -88,7 +89,6 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-       #build and Push using our standardized multi-stage Dockerfiles
       - name: Build and Push Image
         uses: docker/build-push-action@v5
         with:

@@ -50,6 +50,7 @@ public class OrderServiceApplication {
 		app.addInitializers(ctx -> {
 			Map<String, Object> properties = new HashMap<>();
 
+
 			// 1. Try to read directly from standard OS environment variables (Docker mode)
 			String dbUrl = System.getenv("DB_URL");
 			String dbUser = System.getenv("DB_USER_NAME");

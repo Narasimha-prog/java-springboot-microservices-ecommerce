@@ -6,10 +6,19 @@ on:
       - main
       - master
     paths:
+      - 'register-server/**'
+      - 'config-server/**'
+      - 'gateway-service/**'
+      - 'swagger-service/**'
+      - 'user-service/**'
       - 'authentication-service/**'
-      - 'order-service/**'
       - 'product-service/**'
+      - 'order-service/**'
       - 'inventory-service/**'
+      - 'cart-service/**'
+      - 'payment-service/**'
+      - 'review-service/**'
+      - 'notification-service/**'
       - 'chatbot-service/**'
       - 'grpc-contract/**'
       - '.github/workflows/deploy-services.yml'
@@ -18,7 +27,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  # JOB 1: Dynamic Scanner
+  # JOB 1: Dynamic Scanner for all 14 Modules
   changes:
     name: Detect Changed Services
     runs-on: ubuntu-latest
@@ -33,26 +42,44 @@ jobs:
         uses: dorny/paths-filter@v3
         with:
           filters: |
+            register-server: ['register-server/**', 'grpc-contract/**', '.github/workflows/deploy-services.yml']
+            config-server: ['config-server/**', 'grpc-contract/**', '.github/workflows/deploy-services.yml']
+            gateway-service: ['gateway-service/**', 'grpc-contract/**', '.github/workflows/deploy-services.yml']
+            swagger-service: ['swagger-service/**', 'grpc-contract/**', '.github/workflows/deploy-services.yml']
+            user-service: ['user-service/**', 'grpc-contract/**', '.github/workflows/deploy-services.yml']
             authentication-service: ['authentication-service/**', 'grpc-contract/**', '.github/workflows/deploy-services.yml']
-            order-service: ['order-service/**', 'grpc-contract/**', '.github/workflows/deploy-services.yml']
             product-service: ['product-service/**', 'grpc-contract/**', '.github/workflows/deploy-services.yml']
+            order-service: ['order-service/**', 'grpc-contract/**', '.github/workflows/deploy-services.yml']
             inventory-service: ['inventory-service/**', 'grpc-contract/**', '.github/workflows/deploy-services.yml']
+            cart-service: ['cart-service/**', 'grpc-contract/**', '.github/workflows/deploy-services.yml']
+            payment-service: ['payment-service/**', 'grpc-contract/**', '.github/workflows/deploy-services.yml']
+            review-service: ['review-service/**', 'grpc-contract/**', '.github/workflows/deploy-services.yml']
+            notification-service: ['notification-service/**', 'grpc-contract/**', '.github/workflows/deploy-services.yml']
             chatbot-service: ['chatbot-service/**', 'grpc-contract/**', '.github/workflows/deploy-services.yml']
 
       - name: Generate Active Services Matrix Array
         id: set-matrix
         run: |
           SERVICES=()
-          if [ "${{ steps.filter.outputs.authentication-service }}" = "true" ]; then SERVICES+=('"authentication-service"'); fi
-          if [ "${{ steps.filter.outputs.order-service }}" = "true" ]; then SERVICES+=('"order-service"'); fi
-          if [ "${{ steps.filter.outputs.product-service }}" = "true" ]; then SERVICES+=('"product-service"'); fi
-          if [ "${{ steps.filter.outputs.inventory-service }}" = "true" ]; then SERVICES+=('"inventory-service"'); fi
-          if [ "${{ steps.filter.outputs.chatbot-service }}" = "true" ]; then SERVICES+=('"chatbot-service"'); fi
+          if [ "${{ steps.filter.outputs.register-server }}" = "true" ]; then SERVICES+=("register-server"); fi
+          if [ "${{ steps.filter.outputs.config-server }}" = "true" ]; then SERVICES+=("config-server"); fi
+          if [ "${{ steps.filter.outputs.gateway-service }}" = "true" ]; then SERVICES+=("gateway-service"); fi
+          if [ "${{ steps.filter.outputs.swagger-service }}" = "true" ]; then SERVICES+=("swagger-service"); fi
+          if [ "${{ steps.filter.outputs.user-service }}" = "true" ]; then SERVICES+=("user-service"); fi
+          if [ "${{ steps.filter.outputs.authentication-service }}" = "true" ]; then SERVICES+=("authentication-service"); fi
+          if [ "${{ steps.filter.outputs.product-service }}" = "true" ]; then SERVICES+=("product-service"); fi
+          if [ "${{ steps.filter.outputs.order-service }}" = "true" ]; then SERVICES+=("order-service"); fi
+          if [ "${{ steps.filter.outputs.inventory-service }}" = "true" ]; then SERVICES+=("inventory-service"); fi
+          if [ "${{ steps.filter.outputs.cart-service }}" = "true" ]; then SERVICES+=("cart-service"); fi
+          if [ "${{ steps.filter.outputs.payment-service }}" = "true" ]; then SERVICES+=("payment-service"); fi
+          if [ "${{ steps.filter.outputs.review-service }}" = "true" ]; then SERVICES+=("review-service"); fi
+          if [ "${{ steps.filter.outputs.notification-service }}" = "true" ]; then SERVICES+=("notification-service"); fi
+          if [ "${{ steps.filter.outputs.chatbot-service }}" = "true" ]; then SERVICES+=("chatbot-service"); fi
           
-          JSON_ARRAY=$(IFS=,; echo "[${SERVICES[*]}]")
+          JSON_ARRAY=$(printf '%s\n' "${SERVICES[@]}" | jq -R . | jq -s -c .)
           echo "services=$JSON_ARRAY" >> $GITHUB_OUTPUT
 
-  # JOB 2: Heavy-Lifting Dynamic Builder
+  # JOB 2: Dynamic Multi-Module Parallel Compiler
   build-and-push:
     name: Build
     needs: changes
@@ -93,7 +120,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./${{ matrix.service_name }}/Dockerfile
+          file: ./Dockerfile
           build-args: |
             MODULE_NAME=${{ matrix.service_name }}
           push: true

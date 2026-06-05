@@ -65,7 +65,7 @@ public class UserServiceApplication {
 			// 2. Fall back to reading the file ONLY if system environment variables are missing (IDE mode)
 			if (dbUrl == null || dbUser == null || dbPass == null) {
 				try {
-					Dotenv dotenv = Dotenv.load();
+					Dotenv dotenv = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load();
 					dbUrl = dotenv.get("DB_URL");
 					dbUser = dotenv.get("DB_USER_NAME");
 					dbPass = dotenv.get("DB_PASSWORD");

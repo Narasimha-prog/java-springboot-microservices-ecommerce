@@ -47,25 +47,50 @@ public class PaymentServiceApplication {
 
 		SpringApplication app = new SpringApplication(PaymentServiceApplication.class);
 
-		// Add initializer to inject .env values into Spring Environment
-		app.addInitializers( ctx -> {
-			Dotenv dotenv = Dotenv.load();
-
+		app.addInitializers(ctx -> {
 			Map<String, Object> properties = new HashMap<>();
-			properties.put("RAZORPAY_KEY", Objects.requireNonNull(dotenv.get("RAZORPAY_KEY")));
-			properties.put("RAZORPAY_VALUE", Objects.requireNonNull(dotenv.get("RAZORPAY_VALUE")));
-			properties.put("DB_URL", Objects.requireNonNull(dotenv.get("DB_URL")));
-			properties.put("DB_USER_NAME", Objects.requireNonNull(dotenv.get("DB_USER_NAME")));
-			properties.put("DB_PASSWORD", Objects.requireNonNull(dotenv.get("DB_PASSWORD")));
-			properties.put("WEB",Objects.requireNonNull(dotenv.get("WEB")));
 
-			// Add as first property source to override defaults
+			// 1. Try to read directly from standard OS environment variables (Docker mode)
+			String razorpayKey=System.getenv("RAZORPAY_KEY");
+
+			String razorpayValue=System.getenv("RAZORPAY_VALUE");
+			String web=System.getenv("WEB");
+
+			String dbUrl = System.getenv("DB_URL");
+			String dbUser = System.getenv("DB_USER_NAME");
+			String dbPass = System.getenv("DB_PASSWORD");
+
+			// 2. Fall back to reading the file ONLY if system environment variables are missing (IDE mode)
+			if (dbUrl == null || dbUser == null || dbPass == null) {
+				try {
+					Dotenv dotenv = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load();
+					razorpayKey=dotenv.get("RAZORPAY_KEY");
+					razorpayValue=dotenv.get("RAZORPAY_VALUE");
+					web=dotenv.get("WEB");
+					dbUrl = dotenv.get("DB_URL");
+					dbUser = dotenv.get("DB_USER_NAME");
+					dbPass = dotenv.get("DB_PASSWORD");
+				} catch (Exception e) {
+					System.out.println("⚠️ Notification Service: No local .env file found on disk.");
+				}
+			}
+
+			// 3. Inject variables cleanly into Spring environment context if found
+			if (dbUrl != null) properties.put("DB_URL", dbUrl);
+			if (dbUser != null) properties.put("DB_USER_NAME", dbUser);
+			if (dbPass != null) properties.put("DB_PASSWORD", dbPass);
+			if(razorpayKey != null) properties.put("RAZORPAY_KEY",razorpayKey);
+			if(razorpayValue != null) properties.put("RAZORPAY_VALUE",razorpayValue);
+			if(web != null) properties.put("WEB",web);
+
 			ctx.getEnvironment()
 					.getPropertySources()
 					.addFirst(new MapPropertySource("dotenvProperties", properties));
 		});
 
 		app.run(args);
+
+
 
 	}
 

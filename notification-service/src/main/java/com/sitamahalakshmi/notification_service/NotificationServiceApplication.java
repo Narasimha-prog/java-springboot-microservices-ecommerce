@@ -14,17 +14,31 @@ public class NotificationServiceApplication {
 
 	public static void main(String[] args) {
 		SpringApplication app = new SpringApplication(NotificationServiceApplication.class);
-		// Add initializer to inject .env values into Spring Environment
-		app.addInitializers( ctx -> {
-			Dotenv dotenv = Dotenv.load();
+		app.addInitializers(ctx -> {
+			// 1. Configure Dotenv safely to prevent classpath file execution panic loops inside containers
+			Dotenv dotenv = Dotenv.configure()
+					.ignoreIfMalformed()
+					.ignoreIfMissing()
+					.load();
+
+			// 2. Resolution strategy tree: Look at the Linux System Environment context first, fallback to the file asset second
+			String appPassword = System.getenv("app-password") != null ? System.getenv("app-password") : dotenv.get("app-password");
 
 			Map<String, Object> properties = new HashMap<>();
-			properties.put("app-password", Objects.requireNonNull(dotenv.get("app-password")));
 
-			// Add as first property source so it overrides other defaults
-			ctx.getEnvironment()
-					.getPropertySources()
-					.addFirst(new MapPropertySource("dotenvProperties", properties));
+			if (appPassword != null) {
+				properties.put("app-password", appPassword);
+			} else {
+				// Safety alert fallback log for debugging missing variable assignments
+				System.out.println("⚠️ WARNING: JWT 'SECRET' property could not be resolved from Environment or local file!");
+			}
+
+			// 3. Inject variables cleanly into Spring context configuration environment
+			if (!properties.isEmpty()) {
+				ctx.getEnvironment()
+						.getPropertySources()
+						.addFirst(new MapPropertySource("dotenvProperties", properties));
+			}
 		});
 
 		app.run(args);

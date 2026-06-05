@@ -34,10 +34,12 @@ services:
     env_file:
       - .env
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE=http://register-server:8761/eureka/
+      - SPRING_PROFILES_ACTIVE=docker,dev
     networks:
       - backend
     depends_on:
+      - postgres
       - register-server
       - config-server
 
@@ -53,7 +55,8 @@ services:
     env_file:
       - .env
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE=http://register-server:8761/eureka/
+      - SPRING_PROFILES_ACTIVE=dev,docker
     networks:
       - backend
     depends_on:
@@ -72,10 +75,14 @@ services:
     env_file:
       - .env
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE=http://register-server:8761/eureka/
+      - SPRING_PROFILES_ACTIVE=dev,docker
     networks:
       - backend
     depends_on:
+      - postgres
+      - kafka
       - register-server
       - config-server
 
@@ -92,10 +99,14 @@ services:
     env_file:
       - .env
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE=http://register-server:8761/eureka/
+      - SPRING_PROFILES_ACTIVE=dev,docker
     networks:
       - backend
     depends_on:
+      - postgres
+      - kafka
       - register-server
       - config-server
 
@@ -111,7 +122,8 @@ services:
     env_file:
       - .env
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE=http://register-server:8761/eureka/
+      - SPRING_PROFILES_ACTIVE=dev,docker
     networks:
       - backend
     depends_on:
@@ -129,7 +141,8 @@ services:
     env_file:
       - .env
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_PROFILES_ACTIVE=dev,docker
+      - EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE=http://register-server:8761/eureka/
     networks:
       - backend
     depends_on:
@@ -148,11 +161,12 @@ services:
     env_file:
       - .env
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE=http://register-server:8761/eureka/
+      - SPRING_PROFILES_ACTIVE=dev,docker
     networks:
       - backend
     depends_on:
-
+      - postgres
       - register-server
       - config-server
 
@@ -167,11 +181,15 @@ services:
     env_file:
       - .env
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
+
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE=http://register-server:8761/eureka/
+      - SPRING_PROFILES_ACTIVE=dev,docker
     networks:
       - backend
     depends_on:
-
+      - postgres
+      - kafka
       - register-server
       - config-server
   order-service:
@@ -185,7 +203,9 @@ services:
     env_file:
       - .env
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE=http://register-server:8761/eureka/
+      - SPRING_PROFILES_ACTIVE=dev,docker
     networks:
       - backend
     depends_on:
@@ -203,11 +223,31 @@ services:
     env_file:
       - .env
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE=http://register-server:8761/eureka/
+      - SPRING_PROFILES_ACTIVE=dev,docker
     networks:
       - backend
     depends_on:
 
+      - register-server
+      - config-server
+  cart-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE_NAME: cart-service
+    ports:
+      - "8087:8087"
+    env_file:
+      - .env
+    environment:
+      - EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE=http://register-server:8761/eureka/
+      - SPRING_PROFILES_ACTIVE=dev,docker
+    networks:
+      - backend
+    depends_on:
+      - postgres
       - register-server
       - config-server
   chatbot-service:
@@ -221,7 +261,12 @@ services:
     env_file:
       - .env
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - SPRING_AI_OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - SPRING_AI_VECTORSTORE_CHROMA_CLIENT_HOST=http://chromadb
+      - SPRING_AI_VECTORSTORE_CHROMA_CLIENT_PORT=8000
+      - EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE=http://register-server:8761/eureka/
+      - SPRING_PROFILES_ACTIVE=dev,docker
     extra_hosts:
       - "host.docker.internal:host-gateway" # 🌟 Required for Linux containers to find your host machine's ports
     networks:
@@ -281,16 +326,18 @@ services:
     networks:
       - backend
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-
-      # Internal communication
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-
-      # Required configs
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
+      # Define both entry points explicitly
+      KAFKA_LISTENERS: 'INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:29093'
+      # CRITICAL: This is what Kafka tells the microservices to use for subsequent requests
+      KAFKA_ADVERTISED_LISTENERS: 'INTERNAL://kafka:29092,EXTERNAL://localhost:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'INTERNAL'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
 
   sonarqube:
     image: sonarqube:community

@@ -3,6 +3,7 @@ package com.eswar.orderservice.config;
 import com.eswar.orderservice.kafka.event.OrderStatusEvent;
 import com.eswar.orderservice.kafka.event.StockRejectedEvent;
 import com.eswar.orderservice.kafka.event.StockReservedEvent;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JacksonJsonDeserializer;
@@ -20,6 +21,9 @@ import java.util.Map;
 
 @Configuration
 public class KafkaConsumerConfig {
+
+    @Value("${spring.kafka.bootstrap-servers:localhost:9092}")
+    private String bootstrapServers;
 
     @Bean
     public ConsumerFactory<String, OrderStatusEvent> orderStatusConsumerFactory() {
@@ -47,7 +51,7 @@ public class KafkaConsumerConfig {
 
     private Map<String, Object> commonProps() {
         Map<String, Object> props = new HashMap<>();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "order-group");
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         return props;

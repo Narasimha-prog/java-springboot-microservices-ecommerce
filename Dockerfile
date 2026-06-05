@@ -1,6 +1,6 @@
 #stage 1
 
-FROM maven:3.9.6-eclipse-temurin-21 AS builder
+FROM maven:3.9.6-eclipse-temurin-21-jammy AS builder
 
 
 WORKDIR /app
@@ -20,10 +20,22 @@ COPY ${MODULE_NAME}/src/ ./${MODULE_NAME}/src/
 RUN cd ${MODULE_NAME} && mvn clean package -DskipTests
 
 #stage 2
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
-RUN addgroup -S spring && adduser -S spring -G spring
+RUN groupadd -r spring && useradd -r -g spring -m -s /sbin/nologin spring
+
+
+
+
+#  Explicitly create your upload target folder location inside the image
+RUN mkdir -p /app/uploads
+
+# Ensure the 'spring' user account can safely read and write to this path
+RUN chown -R spring:spring /app /app/uploads
+
+RUN chmod -R 755 /app/uploads
+
 USER spring:spring
 
 ARG MODULE_NAME

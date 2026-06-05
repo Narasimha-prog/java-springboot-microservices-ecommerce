@@ -34,16 +34,31 @@ public class ChatbotServiceApplication {
 	public static void main(String[] args) {
 		SpringApplication app = new SpringApplication(ChatbotServiceApplication.class);
 
-		// Add initializer to inject .env values into Spring Environment
-		app.addInitializers( ctx -> {
-			Dotenv dotenv = Dotenv.load();
-
+		app.addInitializers(ctx -> {
 			Map<String, Object> properties = new HashMap<>();
-			properties.put("DB_URL", Objects.requireNonNull(dotenv.get("DB_URL")));
-			properties.put("DB_USER_NAME", Objects.requireNonNull(dotenv.get("DB_USER_NAME")));
-			properties.put("DB_PASSWORD", Objects.requireNonNull(dotenv.get("DB_PASSWORD")));
 
-			// Add as first property source so it overrides other defaults
+			// 1. Try to read directly from standard OS environment variables (Docker mode)
+			String dbUrl = System.getenv("DB_URL");
+			String dbUser = System.getenv("DB_USER_NAME");
+			String dbPass = System.getenv("DB_PASSWORD");
+
+			// 2. Fall back to reading the file ONLY if system environment variables are missing (IDE mode)
+			if (dbUrl == null || dbUser == null || dbPass == null) {
+				try {
+					Dotenv dotenv = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load();
+					dbUrl = dotenv.get("DB_URL");
+					dbUser = dotenv.get("DB_USER_NAME");
+					dbPass = dotenv.get("DB_PASSWORD");
+				} catch (Exception e) {
+					System.out.println("⚠️ Notification Service: No local .env file found on disk.");
+				}
+			}
+
+			// 3. Inject variables cleanly into Spring environment context if found
+			if (dbUrl != null) properties.put("DB_URL", dbUrl);
+			if (dbUser != null) properties.put("DB_USER_NAME", dbUser);
+			if (dbPass != null) properties.put("DB_PASSWORD", dbPass);
+
 			ctx.getEnvironment()
 					.getPropertySources()
 					.addFirst(new MapPropertySource("dotenvProperties", properties));

@@ -127,8 +127,9 @@
 		<dependency>
 			<groupId>com.eswar</groupId>
 			<artifactId>grpc-contract</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>1.0.2</version>
 		</dependency>
+
 		<dependency>
 			<groupId>net.devh</groupId>
 			<artifactId>grpc-client-spring-boot-starter</artifactId>

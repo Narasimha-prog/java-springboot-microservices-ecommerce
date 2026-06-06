@@ -116,11 +116,13 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>com.eswar</groupId>
 			<artifactId>grpc-contract</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>1.0.2</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>

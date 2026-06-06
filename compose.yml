@@ -1,20 +1,13 @@
 services:
   register-server:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        MODULE_NAME: register-server
+    image: lnreddydev/register-server:latest
     ports:
       - "8761:8761"
     networks:
       - backend
+      
   config-server:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        MODULE_NAME: config-server
+    image: lnreddydev/config-server:latest
     environment:
       - SPRING_PROFILES_ACTIVE=git,docker
     ports:
@@ -24,11 +17,7 @@ services:
     depends_on:
       - register-server
   user-service:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        MODULE_NAME: user-service
+    image: lnreddydev/user-service:latest
     ports:
       - "8081:8081"
     env_file:
@@ -45,11 +34,7 @@ services:
 
 
   authentication-service:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        MODULE_NAME: authentication-service
+    image: lnreddydev/authentication-service:latest
     ports:
       - "8082:8082"
     env_file:
@@ -64,11 +49,7 @@ services:
       - config-server
 
   product-service:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        MODULE_NAME: product-service
+    image: lnreddydev/product-service:latest
     ports:
       - "8083:8083"
 
@@ -89,11 +70,7 @@ services:
 
 
   inventory-service:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        MODULE_NAME: inventory-service
+    image: lnreddydev/inventory-service:latest
     ports:
       - "8085:8085"
     env_file:
@@ -112,11 +89,7 @@ services:
 
 
   gateway-service:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        MODULE_NAME: gateway-service
+    image: lnreddydev/gateway-service:latest
     ports:
       - "8080:8080"
     env_file:
@@ -131,11 +104,7 @@ services:
       - config-server
 
   swagger-service:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        MODULE_NAME: swagger-service
+    image: lnreddydev/swagger-service:latest
     ports:
       - "7777:7777"
     env_file:
@@ -151,11 +120,7 @@ services:
       - config-server
 
   review-service:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        MODULE_NAME: review-service
+    image: lnreddydev/review-service:latest
     ports:
       - "8089:8089"
     env_file:
@@ -171,11 +136,7 @@ services:
       - config-server
 
   payment-service:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        MODULE_NAME: payment-service
+    image: lnreddydev/payment-service:latest
     ports:
       - "8086:8086"
     env_file:
@@ -193,11 +154,7 @@ services:
       - register-server
       - config-server
   order-service:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        MODULE_NAME: order-service
+    image: lnreddydev/order-service:latest
     ports:
       - "8084:8084"
     env_file:
@@ -213,11 +170,7 @@ services:
       - register-server
       - config-server
   notification-service:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        MODULE_NAME: notification-service
+    image: lnreddydev/notification-service:latest
     ports:
       - "8088:8088"
     env_file:
@@ -232,11 +185,7 @@ services:
       - register-server
       - config-server
   cart-service:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        MODULE_NAME: cart-service
+    image: lnreddydev/cart-service:latest
     ports:
       - "8087:8087"
     env_file:
@@ -251,11 +200,7 @@ services:
       - register-server
       - config-server
   chatbot-service:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        MODULE_NAME: chatbot-service
+    image: lnreddydev/chatbot-service:latest
     ports:
       - "9999:9999"
     env_file:
@@ -268,7 +213,7 @@ services:
       - EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE=http://register-server:8761/eureka/
       - SPRING_PROFILES_ACTIVE=dev,docker
     extra_hosts:
-      - "host.docker.internal:host-gateway" # 🌟 Required for Linux containers to find your host machine's ports
+      - "host.docker.internal:host-gateway" # Required for Linux containers to find your host machine's ports
     networks:
       - backend
     depends_on:
@@ -356,6 +301,23 @@ services:
       - sonarqube_data:/opt/sonarqube/data
       - sonarqube_logs:/opt/sonarqube/logs
       - sonarqube_extensions:/opt/sonarqube/extensions
+
+
+  localstack:
+    image: localstack/localstack-pro:latest
+    container_name: localstack_main
+    ports:
+      - "4566:4566"            # The main edge port for all AWS services (S3, SQS, etc.)
+      - "4510-4559:4510-4559"  # Ports used for external service execution if needed
+    environment:
+      - SERVICES=s3,sqs        # Explicitly activate only the services you need to save RAM
+      - AWS_DEFAULT_REGION=us-east-1
+    volumes:
+      - "./data/localstack:/var/lib/localstack" # Persist your local AWS data structure
+      - "/var/run/docker.sock:/var/run/docker.sock" # Allows LocalStack to spin up lambda containers if needed
+    networks:
+      - backend
+    restart: always
 
 networks:
   backend:

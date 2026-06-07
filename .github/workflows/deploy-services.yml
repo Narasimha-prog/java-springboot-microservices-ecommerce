@@ -102,11 +102,6 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Build and Install Shared gRPC Contracts
-        run: |
-          cd grpc-contract
-          mvn clean install -DskipTests
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 

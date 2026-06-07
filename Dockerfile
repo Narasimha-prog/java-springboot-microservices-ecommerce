@@ -6,7 +6,19 @@ WORKDIR /app
 
 ARG MODULE_NAME
 
+
+COPY grpc-contract/pom.xml ./grpc-contract/
+
+COPY grpc-contract/src ./grpc-contract/src
+
+WORKDIR /app/grpc-contract
+
+RUN mvn clean install -DskipTests
+
+WORKDIR /app
+
 COPY ${MODULE_NAME}/pom.xml ./${MODULE_NAME}/
+
 
 WORKDIR /app/${MODULE_NAME}
 

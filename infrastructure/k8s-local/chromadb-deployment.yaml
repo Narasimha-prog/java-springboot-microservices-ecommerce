@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f ../../compose.yml
+    kompose.version: 1.32.0 (765fde254)
+  labels:
+    io.kompose.service: chromadb
+  name: chromadb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: chromadb
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f ../../compose.yml
+        kompose.version: 1.32.0 (765fde254)
+      labels:
+        io.kompose.network/java-springboot-microservices-ecommerce-backend: "true"
+        io.kompose.service: chromadb
+    spec:
+      containers:
+        - env:
+            - name: ALLOW_RESET
+              value: "TRUE"
+            - name: IS_PERSISTENT
+              value: "TRUE"
+          image: chromadb/chroma:latest
+          name: standalone-chromadb
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /chroma/chroma
+              name: chroma-data
+      restartPolicy: Always
+      volumes:
+        - name: chroma-data
+          persistentVolumeClaim:
+            claimName: chroma-data

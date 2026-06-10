@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f ../../compose.yml
+    kompose.version: 1.32.0 (765fde254)
+  labels:
+    io.kompose.service: gateway-service
+  name: gateway-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: gateway-service
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f ../../compose.yml
+        kompose.version: 1.32.0 (765fde254)
+      labels:
+        io.kompose.network/java-springboot-microservices-ecommerce-backend: "true"
+        io.kompose.service: gateway-service
+    spec:
+      containers:
+        - env:
+            - name: DB_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_PASSWORD
+                  name: env
+            - name: DB_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_URL
+                  name: env
+            - name: DB_USER_NAME
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_USER_NAME
+                  name: env
+            - name: EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE
+              value: http://register-server:8761/eureka/
+            - name: M_DB
+              valueFrom:
+                configMapKeyRef:
+                  key: M_DB
+                  name: env
+            - name: RAZORPAY_KEY
+              valueFrom:
+                configMapKeyRef:
+                  key: RAZORPAY_KEY
+                  name: env
+            - name: RAZORPAY_VALUE
+              valueFrom:
+                configMapKeyRef:
+                  key: RAZORPAY_VALUE
+                  name: env
+            - name: SECRET
+              valueFrom:
+                configMapKeyRef:
+                  key: SECRET
+                  name: env
+            - name: SPRING_PROFILES_ACTIVE
+              value: dev,docker
+            - name: WEB
+              valueFrom:
+                configMapKeyRef:
+                  key: WEB
+                  name: env
+            - name: app_password
+              valueFrom:
+                configMapKeyRef:
+                  key: app_password
+                  name: env
+          image: lnreddydev/gateway-service:latest
+          name: gateway-service
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+      restartPolicy: Always

@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f ../../compose.yml
+    kompose.version: 1.32.0 (765fde254)
+  labels:
+    io.kompose.service: postgres
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: postgres
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f ../../compose.yml
+        kompose.version: 1.32.0 (765fde254)
+      labels:
+        io.kompose.network/java-springboot-microservices-ecommerce-backend: "true"
+        io.kompose.service: postgres
+    spec:
+      containers:
+        - env:
+            - name: POSTGRES_DB
+              value: ecommerce_db
+            - name: POSTGRES_PASSWORD
+              value: admin
+            - name: POSTGRES_USER
+              value: admin
+          image: postgres:latest
+          name: ecommerce-db
+          ports:
+            - containerPort: 5432
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgres-claim0
+      restartPolicy: Always
+      volumes:
+        - name: postgres-claim0
+          persistentVolumeClaim:
+            claimName: postgres-claim0

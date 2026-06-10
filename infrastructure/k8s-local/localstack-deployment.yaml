@@ -1,0 +1,149 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f ../../compose.yml
+    kompose.version: 1.32.0 (765fde254)
+  labels:
+    io.kompose.service: localstack
+  name: localstack
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: localstack
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f ../../compose.yml
+        kompose.version: 1.32.0 (765fde254)
+      labels:
+        io.kompose.network/java-springboot-microservices-ecommerce-backend: "true"
+        io.kompose.service: localstack
+    spec:
+      containers:
+        - env:
+            - name: AWS_DEFAULT_REGION
+              value: us-east-1
+            - name: SERVICES
+              value: s3,sqs
+          image: localstack/localstack-pro:latest
+          name: localstack-main
+          ports:
+            - containerPort: 4566
+              protocol: TCP
+            - containerPort: 4510
+              protocol: TCP
+            - containerPort: 4511
+              protocol: TCP
+            - containerPort: 4512
+              protocol: TCP
+            - containerPort: 4513
+              protocol: TCP
+            - containerPort: 4514
+              protocol: TCP
+            - containerPort: 4515
+              protocol: TCP
+            - containerPort: 4516
+              protocol: TCP
+            - containerPort: 4517
+              protocol: TCP
+            - containerPort: 4518
+              protocol: TCP
+            - containerPort: 4519
+              protocol: TCP
+            - containerPort: 4520
+              protocol: TCP
+            - containerPort: 4521
+              protocol: TCP
+            - containerPort: 4522
+              protocol: TCP
+            - containerPort: 4523
+              protocol: TCP
+            - containerPort: 4524
+              protocol: TCP
+            - containerPort: 4525
+              protocol: TCP
+            - containerPort: 4526
+              protocol: TCP
+            - containerPort: 4527
+              protocol: TCP
+            - containerPort: 4528
+              protocol: TCP
+            - containerPort: 4529
+              protocol: TCP
+            - containerPort: 4530
+              protocol: TCP
+            - containerPort: 4531
+              protocol: TCP
+            - containerPort: 4532
+              protocol: TCP
+            - containerPort: 4533
+              protocol: TCP
+            - containerPort: 4534
+              protocol: TCP
+            - containerPort: 4535
+              protocol: TCP
+            - containerPort: 4536
+              protocol: TCP
+            - containerPort: 4537
+              protocol: TCP
+            - containerPort: 4538
+              protocol: TCP
+            - containerPort: 4539
+              protocol: TCP
+            - containerPort: 4540
+              protocol: TCP
+            - containerPort: 4541
+              protocol: TCP
+            - containerPort: 4542
+              protocol: TCP
+            - containerPort: 4543
+              protocol: TCP
+            - containerPort: 4544
+              protocol: TCP
+            - containerPort: 4545
+              protocol: TCP
+            - containerPort: 4546
+              protocol: TCP
+            - containerPort: 4547
+              protocol: TCP
+            - containerPort: 4548
+              protocol: TCP
+            - containerPort: 4549
+              protocol: TCP
+            - containerPort: 4550
+              protocol: TCP
+            - containerPort: 4551
+              protocol: TCP
+            - containerPort: 4552
+              protocol: TCP
+            - containerPort: 4553
+              protocol: TCP
+            - containerPort: 4554
+              protocol: TCP
+            - containerPort: 4555
+              protocol: TCP
+            - containerPort: 4556
+              protocol: TCP
+            - containerPort: 4557
+              protocol: TCP
+            - containerPort: 4558
+              protocol: TCP
+            - containerPort: 4559
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /var/lib/localstack
+              name: localstack-claim0
+            - mountPath: /var/run/docker.sock
+              name: localstack-claim1
+      restartPolicy: Always
+      volumes:
+        - name: localstack-claim0
+          persistentVolumeClaim:
+            claimName: localstack-claim0
+        - name: localstack-claim1
+          persistentVolumeClaim:
+            claimName: localstack-claim1

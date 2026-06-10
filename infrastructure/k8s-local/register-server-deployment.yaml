@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f ../../compose.yml
+    kompose.version: 1.32.0 (765fde254)
+  labels:
+    io.kompose.service: register-server
+  name: register-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: register-server
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f ../../compose.yml
+        kompose.version: 1.32.0 (765fde254)
+      labels:
+        io.kompose.network/java-springboot-microservices-ecommerce-backend: "true"
+        io.kompose.service: register-server
+    spec:
+      containers:
+        - image: lnreddydev/register-server:latest
+          name: register-server
+          ports:
+            - containerPort: 8761
+              protocol: TCP
+      restartPolicy: Always

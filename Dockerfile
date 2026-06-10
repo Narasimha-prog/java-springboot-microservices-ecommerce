@@ -6,7 +6,6 @@ WORKDIR /app
 
 ARG MODULE_NAME
 
-
 COPY grpc-contract/pom.xml ./grpc-contract/
 
 COPY grpc-contract/src ./grpc-contract/src

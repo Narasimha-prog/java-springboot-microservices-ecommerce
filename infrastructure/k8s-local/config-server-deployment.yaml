@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f ../../compose.yml
+    kompose.version: 1.32.0 (765fde254)
+  labels:
+    io.kompose.service: config-server
+  name: config-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: config-server
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f ../../compose.yml
+        kompose.version: 1.32.0 (765fde254)
+      labels:
+        io.kompose.network/java-springboot-microservices-ecommerce-backend: "true"
+        io.kompose.service: config-server
+    spec:
+      containers:
+        - env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: git,docker
+          image: lnreddydev/config-server:latest
+          name: config-server
+          ports:
+            - containerPort: 8888
+              protocol: TCP
+      restartPolicy: Always

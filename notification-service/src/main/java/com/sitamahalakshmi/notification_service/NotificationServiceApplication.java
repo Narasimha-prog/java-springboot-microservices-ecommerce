@@ -22,7 +22,7 @@ public class NotificationServiceApplication {
 					.load();
 
 			// 2. Resolution strategy tree: Look at the Linux System Environment context first, fallback to the file asset second
-			String appPassword = System.getenv("app-password") != null ? System.getenv("app-password") : dotenv.get("app-password");
+			String appPassword = System.getenv("app_password") != null ? System.getenv("app_password") : dotenv.get("app_password");
 
 			Map<String, Object> properties = new HashMap<>();
 

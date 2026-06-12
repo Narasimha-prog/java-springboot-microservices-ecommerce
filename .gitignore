@@ -18,9 +18,9 @@ target/
 .vscode/
 
 uploads
-
+/infrastructure/k8s-local/env-configmap.yaml
 # Local Terraform Directories and State files
 **/.terraform/
 *.tfstate
 *.tfstate.*
-.terraform.lock.hcl
+.terraform.lock.hclinfrastructure/k8s-local/minikube-linux-amd64

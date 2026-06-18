@@ -4,6 +4,7 @@ import com.eswar.productservice.constatnts.ProductColor;
 import com.eswar.productservice.constatnts.ProductSize;
 import com.eswar.productservice.constatnts.ProductStatus;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -25,5 +26,5 @@ public record ProductResponseDto(
         List<String> imageUrls, // New: List of transformed URLs
         Instant createdAt,
         Instant updatedAt
-) {
+)implements Serializable {
 }

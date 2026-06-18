@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -32,5 +33,5 @@ public record UpdateProductRequestDto(
 
         @NotNull(message = "Category is required")
         UUID categoryId
-) {
+)implements Serializable {
 }

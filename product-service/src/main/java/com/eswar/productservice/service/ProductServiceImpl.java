@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.*;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +30,8 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+
+@CacheConfig(cacheNames = "products")
 public class ProductServiceImpl implements IProductService {
     private final ObjectMapper objectMapper;
     private final IProductRepository productRepository;
@@ -40,6 +43,7 @@ public class ProductServiceImpl implements IProductService {
 
     @Override
     @Transactional
+    @CacheEvict(allEntries = true)
     public ProductResponseDto create(CreateProductRequestDto request, List<MultipartFile> files) {
 
         log.info("Creating product with SKU: {}", request.sku());
@@ -117,6 +121,7 @@ public class ProductServiceImpl implements IProductService {
     }
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(key = "#id")
     public ProductResponseDto getById(UUID id) {
 
         ProductEntity product = productRepository.findById(id)
@@ -127,6 +132,7 @@ public class ProductServiceImpl implements IProductService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(key = "'list-page-' + #pageable.pageNumber + '-size-' + #pageable.pageSize")
     public PageResponse<ProductResponseDto> getAll(Pageable pageable) {
      Page<ProductEntity> entityPage=productRepository.findAll(pageable);
 
@@ -137,6 +143,10 @@ public class ProductServiceImpl implements IProductService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(key = "#id"),
+            @CacheEvict(allEntries = true)
+    })
     public void delete(UUID id) {
 
         //fetch
@@ -148,6 +158,7 @@ public class ProductServiceImpl implements IProductService {
     }
 
     @Override
+    @Cacheable(key = "'featured-page-' + #pageable.pageNumber + '-size-' + #pageable.pageSize")
     public PageResponse<ProductResponseDto> getFeatured(Pageable pageable) {
         Page<ProductEntity> entityPage=productRepository.findByFeaturedTrue(pageable);
 
@@ -155,6 +166,7 @@ public class ProductServiceImpl implements IProductService {
     }
 
     @Override
+    @Cacheable(key = "'related-to-' + #id + '-page-' + #pageable.pageNumber")
     public PageResponse<ProductResponseDto> getRelated(Pageable pageable, UUID id) {
         // 1. Find the current product to identify its category
         ProductEntity currentProduct = productRepository.findById(id)
@@ -170,12 +182,15 @@ public class ProductServiceImpl implements IProductService {
     }
 
     @Override
+    @Cacheable(key = "'filter-cat-' + #categoryId + '-sizes-' + T(java.util.Objects).hashCode(#productSizes) + '-page-' + #pageable.pageNumber")
     public PageResponse<ProductResponseDto> filter(Pageable pageable, UUID categoryId, List<ProductSize> productSizes) {
         Page<ProductEntity> entityPage=productRepository.findByCategoryIdAndProductSizeIn(categoryId,productSizes,pageable);
         return PagedUtils.toPageResponse(entityPage,mapper::toResponse);
     }
 
     @Transactional
+    @CachePut(key = "#id")
+    @CacheEvict(allEntries = true)
     public ProductResponseDto update(UUID id, UpdateProductRequestDto request) {
         // 1. Fetch
         ProductEntity product = productRepository.findById(id)

@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.servers.Server;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -42,6 +43,7 @@ import java.util.Objects;
 		in = SecuritySchemeIn.HEADER    // Token passed in header
 )
 @EnableScheduling
+@EnableCaching
 public class ProductServiceApplication {
 
 	public static void main(String[] args) {

@@ -12,7 +12,7 @@ public class BusinessException extends RuntimeException {
     }
 
     public BusinessException(ErrorCode errorCode, String customMessage) {
-        super(customMessage); // override message if needed
+        super(String.format("%s - Context: %s", errorCode.name(), customMessage));// override message if needed
         this.errorCode = errorCode;
     }
     public BusinessException(ErrorCode errorCode, Object detail) {

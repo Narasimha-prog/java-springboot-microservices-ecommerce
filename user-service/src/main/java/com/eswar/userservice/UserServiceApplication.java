@@ -24,7 +24,7 @@ import java.util.Objects;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-@EnableJpaAuditing
+
 @OpenAPIDefinition(
 		info = @Info(title = "User Service API", version = "1.0.0"),
 		security = @SecurityRequirement(name = "JWT"),

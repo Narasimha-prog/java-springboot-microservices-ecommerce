@@ -107,11 +107,11 @@ class UserRestControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/v1/users/email - Success")
+    @DisplayName("GET /api/v1/users/by-email - Success")
     void getUserByEmail() throws Exception {
         when(userService.getUserByEmail(userEmail)).thenReturn(userResponseDto);
 
-        mockMvc.perform(get("/api/v1/users/email")
+        mockMvc.perform(get("/api/v1/users/by-email")
                         .param("email", userEmail) // Sets query parameter ?email=...
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -158,22 +158,24 @@ class UserRestControllerTest {
     }
 
     @Test
-    @DisplayName("POST /api/v1/users/{id}/roles/{role} - Success")
+    @DisplayName("PATCH /api/v1/users/{id}/roles/add - Success")
     void addRole() throws Exception {
         when(userService.addRoleToUser(userId, UserRole.ADMIN)).thenReturn(userResponseDto);
 
-        mockMvc.perform(post("/api/v1/users/{id}/roles/{role}", userId, UserRole.ADMIN))
+        mockMvc.perform(patch("/api/v1/users/{id}/roles/add", userId)
+                        .param("role", UserRole.ADMIN.name()))
+
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(userId.toString()));
     }
 
     @Test
-    @DisplayName("DELETE /api/v1/users/{id}/roles/{role} - Success")
+    @DisplayName("PATCH /api/v1/users/{id}/roles/remove - Success")
     @WithMockUser(roles = "ADMIN")
     void removeRole() throws Exception {
         when(userService.removeRoleFromUser(userId, UserRole.ADMIN)).thenReturn(userResponseDto);
 
-        mockMvc.perform(delete("/api/v1/users/{id}/roles/remove", userId, UserRole.ADMIN))
+        mockMvc.perform(patch("/api/v1/users/{id}/roles/remove", userId).param("role", UserRole.ADMIN.name()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(userId.toString()));
     }

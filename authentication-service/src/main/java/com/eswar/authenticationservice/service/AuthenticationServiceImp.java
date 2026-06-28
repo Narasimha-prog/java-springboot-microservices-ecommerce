@@ -10,6 +10,10 @@ import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +34,8 @@ public class AuthenticationServiceImp implements IAuthenticationService {
     private final GrpcUserServiceClient client;
     private final PasswordEncoder passwordEncoder;
 
+    private final AuthenticationManager authenticationManager;
+
     @Override
     public AuthenticationResponseDto login(LoginRequestDto request) {
 
@@ -43,9 +49,19 @@ public class AuthenticationServiceImp implements IAuthenticationService {
             throw GrpcExceptionMapper.map(ex);
         }
 
-        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-            throw new BusinessException(ErrorCode.INVALID_CREDENTIALS);
-        }
+
+        Authentication authentication =
+                authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(
+                                request.email(),
+                                request.password()
+                        )
+                );
+
+        UserDetails user2 =
+                (UserDetails) authentication.getPrincipal();
+
+
 
         Set<String> roles = new HashSet<>(user.getRolesList());
 

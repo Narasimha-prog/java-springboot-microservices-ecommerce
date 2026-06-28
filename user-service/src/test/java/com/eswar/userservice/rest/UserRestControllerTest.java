@@ -45,6 +45,7 @@ class UserRestControllerTest {
 
     @MockitoBean // Stubs out your service interface entirely
     private IUserService userService;
+
     @MockitoBean
     private PasswordEncoder passwordEncoder;
 

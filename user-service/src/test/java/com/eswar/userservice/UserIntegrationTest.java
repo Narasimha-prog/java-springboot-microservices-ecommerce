@@ -33,10 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 //  Enables HTTP endpoint simulation over full context
 @Testcontainers // Activates Testcontainers Docker management lifecycle
 public class UserIntegrationTest {
-    static {
-        System.setProperty("tc.host", "unix:///var/run/docker.sock");
-        System.setProperty("docker.host", "unix:///var/run/docker.sock");
-    }
+
 
     @Container
     @ServiceConnection //  Automatically wires database credentials straight to Spring Data datasource config
@@ -60,8 +57,17 @@ public class UserIntegrationTest {
 
         Set<UserRole> roles = new HashSet<>(Collections.singletonList(UserRole.USER));
         validUserRequest = new UserRequestDto(
-                "John", "Doe", "integration@example.com", "+1", "1234567890",
-                "Main St", "New York", "USA", "10001", "SecurePassword123!", roles
+                "John",                     // 1. firstName
+                "Doe",                      // 2. lastName
+                "integration@example.com",  // 3. email
+                "SecurePassword123@",       // 4. password
+                "+1",                       // 5. countryCode
+                "1234567890",               // 6. phoneNumber
+                "Main St",                  // 7. addressStreet
+                "New York",                 // 8. addressCity
+                "USA",                      // 9. addressCountry
+                "10001",                    // 10. addressZipCode
+                roles                       // 11. roles
         );
     }
 

@@ -52,7 +52,7 @@ public class ReviewServiceApplication {
 			Map<String, Object> properties = new HashMap<>();
 
 			// 1. Try to read directly from standard OS environment variables (Docker mode)
-			String dbUrl = System.getenv("DB_URL");
+			String dbUrl = System.getenv("M_DB");
 			String dbUser = System.getenv("DB_USER_NAME");
 			String dbPass = System.getenv("DB_PASSWORD");
 
@@ -60,7 +60,7 @@ public class ReviewServiceApplication {
 			if (dbUrl == null || dbUser == null || dbPass == null) {
 				try {
 					Dotenv dotenv = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load();
-					dbUrl = dotenv.get("DB_URL");
+					dbUrl = dotenv.get("M_DB");
 					dbUser = dotenv.get("DB_USER_NAME");
 					dbPass = dotenv.get("DB_PASSWORD");
 				} catch (Exception e) {
@@ -69,7 +69,7 @@ public class ReviewServiceApplication {
 			}
 
 			// 3. Inject variables cleanly into Spring environment context if found
-			if (dbUrl != null) properties.put("DB_URL", dbUrl);
+			if (dbUrl != null) properties.put("M_DB", dbUrl);
 			if (dbUser != null) properties.put("DB_USER_NAME", dbUser);
 			if (dbPass != null) properties.put("DB_PASSWORD", dbPass);
 
